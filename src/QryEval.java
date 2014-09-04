@@ -55,7 +55,7 @@ public class QryEval {
       System.err.println(usage);
       System.exit(1);
     }
-
+    BufferedWriter writer;
     // read in the parameter file; one parameter per line in format of key=value
     Map<String, String> params = new HashMap<String, String>();
     Scanner scan = new Scanner(new File(args[0]));
@@ -72,6 +72,8 @@ public class QryEval {
       System.err.println("Error: Parameters were missing.");
       System.exit(1);
     }
+    
+    writer  = new BufferedWriter(new FileWriter(new File(params.get("trecEvalOutputPath"))));
 
     // open the index
     READER = DirectoryReader.open(FSDirectory.open(new File(params.get("indexPath"))));
@@ -96,9 +98,9 @@ public class QryEval {
 
     // How to use the term vector.
     TermVector tv = new TermVector(1, "body");
-    System.out.println(tv.stemString(100)); // get the string for the 100th stem
-    System.out.println(tv.stemDf(100)); // get its df
-    System.out.println(tv.totalStemFreq(100)); // get its ctf
+    System.out.println(tv.stemString(84)); // get the string for the 100th stem
+    System.out.println(tv.stemDf(84)); // get its df
+    System.out.println(tv.totalStemFreq(84)); // get its ctf
     
     /**
      *  The index is open. Start evaluating queries. The examples
@@ -118,19 +120,19 @@ public class QryEval {
      */
 
     //  A one-word query.
-    printResults("pea",
+    printResultstoFile("pea",
         (new QryopSlScore(
-    	     new QryopIlTerm(tokenizeQuery("pea")[0]))).evaluate(model));
+    	     new QryopIlTerm(tokenizeQuery("pea")[0]))).evaluate(model),writer);
 
     //  A more complex query.
-    printResults("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
+    printResultstoFile("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
         (new QryopSlAnd(
             new QryopIlTerm(tokenizeQuery("asparagus")[0]),
             new QryopIlTerm(tokenizeQuery("broccoli")[0]),
             new QryopIlTerm(tokenizeQuery("cauliflower")[0]),
             new QryopIlSyn(
                 new QryopIlTerm(tokenizeQuery("peapods")[0]), 
-                new QryopIlTerm(tokenizeQuery("peas")[0])))).evaluate(model));
+                new QryopIlTerm(tokenizeQuery("peas")[0])))).evaluate(model), writer);
 
     //  A different way to create the previous query.  This doesn't use
     //  a stack, but it may make it easier to see how you would parse a
@@ -143,8 +145,8 @@ public class QryEval {
     op2.add (new QryopIlTerm(tokenizeQuery("peapods")[0]));
     op2.add (new QryopIlTerm(tokenizeQuery("peas")[0]));
     op1.add (op2);
-    printResults("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
-		 op1.evaluate(model));
+    printResultstoFile("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
+		 op1.evaluate(model), writer);
 
     //  Using the example query parser.  Notice that this does no
     //  lexical processing of query terms.  Add that to the query
@@ -152,7 +154,7 @@ public class QryEval {
     Qryop qTree;
     String query = new String ("#AND(apple pie)");
     qTree = parseQuery (query);
-    printResults (query, qTree.evaluate (model));
+    printResultstoFile (query, qTree.evaluate (model), writer);
 
     /*
      *  Create the trec_eval output.  Your code should write to the
@@ -160,22 +162,31 @@ public class QryEval {
      *  results that you retrieved above.  This code just allows the
      *  testing infrastructure to work on QryEval.
      */
-    BufferedWriter writer = null;
-
-    try {
-      writer = new BufferedWriter(new FileWriter(new File("teval.in")));
-
-      writer.write("1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1");
-      writer.write("1 Q0 clueweb09-enwp01-58-04573 2 0.9 run-1");
-      writer.write("1 Q0 clueweb09-enwp01-24-11888 3 0.8 run-1");
-      writer.write("2 Q0 clueweb09-enwp00-70-20490 1 0.9 run-1");
-    } catch (Exception e) {
-      e.printStackTrace();
-    } finally {
-      try {
-        writer.close();
-      } catch (Exception e) {
-      }
+////    BufferedWriter writer = null;
+//
+//    try {
+////      writer = new BufferedWriter(new FileWriter(new File("teval.in")));
+//
+//      writer.write("1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1");
+//      writer.write("1 Q0 clueweb09-enwp01-58-04573 2 0.9 run-1");
+//      writer.write("1 Q0 clueweb09-enwp01-24-11888 3 0.8 run-1");
+//      writer.write("2 Q0 clueweb09-enwp00-70-20490 1 0.9 run-1");
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    } finally {
+//      try {
+//        writer.close();
+//      } catch (Exception e) {
+//      }
+//    }
+    
+    //close the writer.
+    
+    try{
+    	writer.close();
+    }
+    catch(Exception e){
+    	// hmm weird case. cant do anything now. If null pointer occurs the writer could have been closed already.
     }
 
     // Later HW assignments will use more RAM, so you want to be aware
@@ -354,7 +365,7 @@ public class QryEval {
     if (result.docScores.scores.size() < 1) {
       System.out.println("\tNo results.");
     } else {
-      for (int i = 0; i < result.docScores.scores.size(); i++) {
+      for (int i = 0; i < Math.min(100, result.docScores.scores.size()); i++) {
         System.out.println("\t" + i + ":  "
 			   + getExternalDocid (result.docScores.getDocid(i))
 			   + ", "
@@ -362,6 +373,28 @@ public class QryEval {
       }
     }
   }
+  
+  
+	static void printResultstoFile(String queryName, QryResult result, Writer writer) throws IOException {
+		/* Sample format.
+		 * for a normal result
+		 * "1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1";
+		 * 
+		 * For empyt result
+		 * 10 	Q0 	dummy 	1 	0	run-1
+		*/
+		
+		if (result.docScores.scores.size() < 1) {
+			writer.write((queryName + " Q0 dummy 1 0 run-1"+"\n"));
+		} else {
+			for (int i = 0; i < Math.min(100, result.docScores.scores.size()); i++) {
+				writer.write(queryName + " Q0 "
+						+ getExternalDocid(result.docScores.getDocid(i)) + " "
+						+ result.docScores.getDocidScore(i) + " " + "run-1"+"\n");
+			}
+		}
+
+	}
 
   /**
    *  Given a query string, returns the terms one at a time with stopwords
