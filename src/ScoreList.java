@@ -11,7 +11,7 @@ public class ScoreList {
 
   //  A little utilty class to create a <docid, score> object.
 
-  protected class ScoreListEntry {
+  protected class ScoreListEntry implements Comparable<ScoreListEntry> {
     private int docid;
     private double score;
 
@@ -19,6 +19,26 @@ public class ScoreList {
       this.docid = docid;
       this.score = score;
     }
+
+	@Override
+	public int compareTo(ScoreListEntry entry) {
+		// TODO verify the sort order for this compareTo method in the case
+		// of comparing scores.Already verified for names but not for scores
+		int i = Double.compare(this.score, entry.score);
+		if(i!=0){
+			return i;
+		}
+		else{
+			try{
+				return QryEval.getExternalDocid(this.docid).compareTo(QryEval.getExternalDocid(entry.docid));
+			}
+			catch(Exception e){
+				System.out.println("Error while obtaining the external DocId from the index in ScoreList CompareTo method" + e);
+			}
+			return i;
+		}
+		
+	}
   }
 
   List<ScoreListEntry> scores = new ArrayList<ScoreListEntry>();

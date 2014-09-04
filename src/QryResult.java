@@ -1,3 +1,5 @@
+import java.util.Collections;
+
 /**
  *  All query operators return QryResult objects.  QryResult objects
  *  encapsulate the inverted lists (InvList) produced by QryopIl query
@@ -19,5 +21,15 @@ public class QryResult {
 
   ScoreList docScores = new ScoreList();
   InvList invertedList = new InvList();
+  
+  
+	/*
+	 * Sort the matching documents by their scores, in descending order. The
+	 * external document id should be a secondary sort key (i.e., for breaking
+	 * ties). Smaller ids should be ranked higher (i.e. ascending order).
+	 */
+  public void sortResults(){
+	  Collections.sort(docScores.scores);
+  }
 
 }
