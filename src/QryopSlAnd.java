@@ -88,7 +88,7 @@ public class QryopSlAnd extends QryopSl {
     for ( ; ptr0.nextDoc < ptr0.scoreList.scores.size(); ptr0.nextDoc ++) {
 
       int ptr0Docid = ptr0.scoreList.getDocid (ptr0.nextDoc);
-      double docScore = 1.0;
+      double docScore = ptr0.scoreList.getDocidScore(ptr0.nextDoc);
 
       //  Do the other query arguments have the ptr0Docid?
 
@@ -106,6 +106,7 @@ public class QryopSlAnd extends QryopSl {
 	    if (ptrj.scoreList.getDocid (ptrj.nextDoc) < ptr0Docid)
 	      ptrj.nextDoc ++;			// Not yet at the right doc.
 	  else
+		  docScore = Math.min(docScore, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
 	      break;				// ptrj matches ptr0Docid
 	}
       }
