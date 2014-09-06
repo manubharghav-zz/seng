@@ -105,9 +105,10 @@ public class QryopSlAnd extends QryopSl {
 	  else
 	    if (ptrj.scoreList.getDocid (ptrj.nextDoc) < ptr0Docid)
 	      ptrj.nextDoc ++;			// Not yet at the right doc.
-	  else
+	  else {
 		  docScore = Math.min(docScore, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
-	      break;				// ptrj matches ptr0Docid
+	      break;// ptrj matches ptr0Docid
+	  }
 	}
       }
 
