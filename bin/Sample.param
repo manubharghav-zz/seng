@@ -1,4 +1,0 @@
-queryFilePath=/home/manu/study/search_engines/pro1/queriesOr.txt
-indexPath=/home/manu/study/search_engines/index
-trecEvalOutputPath=/home/manu/study/search_engines/project1/pro.out
-retrievalAlgorithm=UnrankedBoolean
