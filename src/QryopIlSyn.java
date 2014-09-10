@@ -42,75 +42,85 @@ public class QryopIlSyn extends QryopIl {
    */
   public QryResult evaluate(RetrievalModel r) throws IOException {
 
-    //  Initialization
+	  // Initialization
 
-    allocDaaTPtrs (r);
-    syntaxCheckArgResults (this.daatPtrs);
+	  allocDaaTPtrs(r);
+	  syntaxCheckArgResults(this.daatPtrs);
 
-    QryResult result = new QryResult ();
-    result.invertedList.field = new String (this.daatPtrs.get(0).invList.field);
+	  QryResult result = new QryResult();
+	  result.invertedList.field = new String(
+			  this.daatPtrs.get(0).invList.field);
 
-    //  Each pass of the loop adds 1 document to result until all of
-    //  the inverted lists are depleted.  When a list is depleted, it
-    //  is removed from daatPtrs, so this loop runs until daatPtrs is empty.
+	  // Each pass of the loop adds 1 document to result until all of
+	  // the inverted lists are depleted. When a list is depleted, it
+	  // is removed from daatPtrs, so this loop runs until daatPtrs is empty.
 
-    //  This implementation is intended to be clear.  A more efficient
-    //  implementation would combine loops and use merge-sort.
+	  // This implementation is intended to be clear. A more efficient
+	  // implementation would combine loops and use merge-sort.
+	  
+	  // doing a null check.
+	  Iterator<DaaTPtr> iter = this.daatPtrs.iterator();
+	  while(iter.hasNext()){
+		  if(iter.next().invList.df==0){
+			  iter.remove();
+		  }
+	  }
 
-    while (this.daatPtrs.size() > 0) {
+	  while (this.daatPtrs.size() > 0) {
 
-      int nextDocid = getSmallestCurrentDocid ();
+		  int nextDocid = getSmallestCurrentDocid();
 
-      //  Create a new posting that is the union of the posting lists
-      //  that match the nextDocid.
+		  // Create a new posting that is the union of the posting lists
+		  // that match the nextDocid.
 
-      List<Integer> positions = new ArrayList<Integer>();
+		  List<Integer> positions = new ArrayList<Integer>();
 
-      for (int i=0; i<this.daatPtrs.size(); i++) {
-	DaaTPtr ptri = this.daatPtrs.get(i);
+		  for (int i = 0; i < this.daatPtrs.size(); i++) {
+			  DaaTPtr ptri = this.daatPtrs.get(i);
 
-	if (ptri.invList.getDocid (ptri.nextDoc) == nextDocid) {
-	  positions.addAll (ptri.invList.postings.get(ptri.nextDoc).positions);
-	  ptri.nextDoc ++;
-	}
-      }
+			  if (ptri.invList.getDocid(ptri.nextDoc) == nextDocid) {
+				  positions
+				  .addAll(ptri.invList.postings.get(ptri.nextDoc).positions);
+				  ptri.nextDoc++;
+			  }
+		  }
 
-      Collections.sort (positions);
-      result.invertedList.appendPosting (nextDocid, positions);
+		  Collections.sort(positions);
+		  result.invertedList.appendPosting(nextDocid, positions);
 
-      //  If a DaatPtr has reached the end of its list, remove it.
-      //  The loop is backwards so that removing an arg does not
-      //  interfere with iteration.
+		  // If a DaatPtr has reached the end of its list, remove it.
+		  // The loop is backwards so that removing an arg does not
+		  // interfere with iteration.
 
-      for (int i=this.daatPtrs.size()-1; i>=0; i--) {
-	DaaTPtr ptri = this.daatPtrs.get(i);
+		  for (int i = this.daatPtrs.size() - 1; i >= 0; i--) {
+			  DaaTPtr ptri = this.daatPtrs.get(i);
 
-	if (ptri.nextDoc >= ptri.invList.postings.size()) {
-	  this.daatPtrs.remove (i);
-	}
-      }
-    }
+			  if (ptri.nextDoc >= ptri.invList.postings.size()) {
+				  this.daatPtrs.remove(i);
+			  }
+		  }
+	  }
 
-    freeDaaTPtrs();
+	  freeDaaTPtrs();
 
-    return result;
+	  return result;
   }
 
   /**
    *  Return the smallest unexamined docid from the DaaTPtrs.
    *  @return The smallest internal document id.
    */
-  public int getSmallestCurrentDocid () {
+  public int getSmallestCurrentDocid() {
 
-    int nextDocid = Integer.MAX_VALUE;
+	  int nextDocid = Integer.MAX_VALUE;
 
-    for (int i=0; i<this.daatPtrs.size(); i++) {
-      DaaTPtr ptri = this.daatPtrs.get(i);
-      if (nextDocid > ptri.invList.getDocid (ptri.nextDoc))
-	nextDocid = ptri.invList.getDocid (ptri.nextDoc);
-      }
+	  for (int i = 0; i < this.daatPtrs.size(); i++) {
+		  DaaTPtr ptri = this.daatPtrs.get(i);
+		  if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
+			  nextDocid = ptri.invList.getDocid(ptri.nextDoc);
+	  }
 
-    return (nextDocid);
+	  return (nextDocid);
   }
 
   /**
