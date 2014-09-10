@@ -50,6 +50,8 @@ public class QryEval {
    */
   public static void main(String[] args) throws Exception {
     
+	  
+
     // must supply parameter file
     if (args.length < 1) {
       System.err.println(usage);
@@ -77,7 +79,9 @@ public class QryEval {
 
     // open the index
     READER = DirectoryReader.open(FSDirectory.open(new File(params.get("indexPath"))));
-
+    
+    String QueryFilePath = params.get("queryFilePath");
+    
     if (READER == null) {
       System.err.println(usage);
       System.exit(1);
@@ -86,103 +90,28 @@ public class QryEval {
     DocLengthStore s = new DocLengthStore(READER);
 
     RetrievalModel model = new RetrievalModelUnrankedBoolean();
-
-    /*
-     *  The code below is an unorganized set of examples that show
-     *  you different ways of accessing the index.  Some of these
-     *  are only useful in HW2 or HW3.
-     */
-
-    // Lookup the document length of the body field of doc 0.
-    System.out.println(s.getDocLength("body", 0));
-
-    // How to use the term vector.
-    TermVector tv = new TermVector(1, "body");
-    System.out.println(tv.stemString(84)); // get the string for the 100th stem
-    System.out.println(tv.stemDf(84)); // get its df
-    System.out.println(tv.totalStemFreq(84)); // get its ctf
-    
-    /**
-     *  The index is open. Start evaluating queries. The examples
-     *  below show query trees for two simple queries.  These are
-     *  meant to illustrate how query nodes are created and connected.
-     *  However your software will not create queries like this.  Your
-     *  software will use a query parser.  See parseQuery.
-     *
-     *  The general pattern is to tokenize the  query term (so that it
-     *  gets converted to lowercase, stopped, stemmed, etc), create a
-     *  Term node to fetch the inverted list, create a Score node to
-     *  convert an inverted list to a score list, evaluate the query,
-     *  and print results.
-     * 
-     *  Modify the software so that you read a query from a file,
-     *  parse it, and form the query tree automatically.
-     */
-
-    //  A one-word query.
-    printResultstoFile("pea",
-        (new QryopSlScore(
-    	     new QryopIlTerm(tokenizeQuery("pea")[0]))).evaluate(model),writer);
-
-    //  A more complex query.
-    printResultstoFile("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
-        (new QryopSlAnd(
-            new QryopIlTerm(tokenizeQuery("asparagus")[0]),
-            new QryopIlTerm(tokenizeQuery("broccoli")[0]),
-            new QryopIlTerm(tokenizeQuery("cauliflower")[0]),
-            new QryopIlSyn(
-                new QryopIlTerm(tokenizeQuery("peapods")[0]), 
-                new QryopIlTerm(tokenizeQuery("peas")[0])))).evaluate(model), writer);
-
-    //  A different way to create the previous query.  This doesn't use
-    //  a stack, but it may make it easier to see how you would parse a
-    //  query with a stack-based architecture.
-    Qryop op1 = new QryopSlAnd();
-    op1.add (new QryopIlTerm(tokenizeQuery("asparagus")[0]));
-    op1.add (new QryopIlTerm(tokenizeQuery("broccoli")[0]));
-    op1.add (new QryopIlTerm(tokenizeQuery("cauliflower")[0]));
-    Qryop op2 = new QryopIlSyn();
-    op2.add (new QryopIlTerm(tokenizeQuery("peapods")[0]));
-    op2.add (new QryopIlTerm(tokenizeQuery("peas")[0]));
-    op1.add (op2);
-    printResultstoFile("#AND (aparagus broccoli cauliflower #SYN(peapods peas))",
-		 op1.evaluate(model), writer);
-
-    //  Using the example query parser.  Notice that this does no
-    //  lexical processing of query terms.  Add that to the query
-    //  parser.
-    Qryop qTree;
-    String query = new String ("#AND(apple pie)");
-    qTree = parseQuery (query);
-    printResultstoFile (query, qTree.evaluate (model), writer);
-
-    /*
-     *  Create the trec_eval output.  Your code should write to the
-     *  file specified in the parameter file, and it should write the
-     *  results that you retrieved above.  This code just allows the
-     *  testing infrastructure to work on QryEval.
-     */
-////    BufferedWriter writer = null;
-//
-//    try {
-////      writer = new BufferedWriter(new FileWriter(new File("teval.in")));
-//
-//      writer.write("1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1");
-//      writer.write("1 Q0 clueweb09-enwp01-58-04573 2 0.9 run-1");
-//      writer.write("1 Q0 clueweb09-enwp01-24-11888 3 0.8 run-1");
-//      writer.write("2 Q0 clueweb09-enwp00-70-20490 1 0.9 run-1");
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    } finally {
-//      try {
-//        writer.close();
-//      } catch (Exception e) {
-//      }
-//    }
-    
-    //close the writer.
+    //
+    BufferedReader input = new BufferedReader(new FileReader(QueryFilePath));
+    String line2="";
+    while((line2=input.readLine())!=null){
+    	
+    	String[] splits = line2.split(":");
+    	String query_num = splits[0];
+    	String query= splits[1];
+    	System.out.println("Processing query: " + query_num );
+    	try{
+    		Qryop qTree;
+    		qTree = parseQuery (query);
+    	    printResultstoFile(query_num, qTree.evaluate (model),writer);
+    		
+    	}
+    	catch(Exception e){
+    		System.out.println(e +" occured while processing "  +  line2);
+    	}
+    }
     
     try{
+    	input.close();
     	writer.close();
     }
  catch (Exception e) {
@@ -283,11 +212,19 @@ public class QryEval {
 
       token = tokens.nextToken();
 
-      if (token.matches("[ ,(\t\n\r]")) {
+      if (token.matches("[/ ,(\t\n\r]")) {
         // Ignore most delimiters.
       } else if (token.equalsIgnoreCase("#and")) {
         currentOp = new QryopSlAnd();
         stack.push(currentOp);
+      } else if (token.equalsIgnoreCase("#or")) {
+          currentOp = new QryopSlOr();
+          stack.push(currentOp);
+      } else if (token.toLowerCase().contains("#near")) {
+    	  String[] splits  = token.split("/");
+    	  
+          currentOp = new QryopIlNear(Integer.parseInt(splits[1]));
+          stack.push(currentOp);
       } else if (token.equalsIgnoreCase("#syn")) {
         currentOp = new QryopIlSyn();
         stack.push(currentOp);
@@ -312,8 +249,20 @@ public class QryEval {
         // NOTE: You should do lexical processing of the token before
         // creating the query term, and you should check to see whether
         // the token specifies a particular field (e.g., apple.title).
-
-        currentOp.add(new QryopIlTerm(token));
+    	  StringTokenizer fields = new StringTokenizer(token,".",false);
+    	  String word = fields.nextToken();
+    	  String[] tokenizedWord = tokenizeQuery(word);
+    	  if(tokenizedWord.length>0){
+    		  
+    	  
+	    	  if(fields.hasMoreTokens()){
+	    		  currentOp.add(new QryopIlTerm((tokenizedWord[0]),fields.nextToken()));
+	    	  }
+	    	  else{
+	    		  currentOp.add(new QryopIlTerm((tokenizedWord[0])));
+	    	  }
+    	  }
+        
       }
     }
 
