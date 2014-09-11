@@ -110,27 +110,13 @@ public class QryopIlNear extends QryopIl {
 		  }
 	  }
 	  
-	  // Sort the arguments so that the shortest lists are first. This
-	  // improves the efficiency of near operators. We avoid looking for
-	  // document which are not present at all.
 
-//	  for (int i = 0; i < (this.daatPtrs.size() - 1); i++) {
-//		  for (int j = i + 1; j < this.daatPtrs.size(); j++) {
-//			  if (this.daatPtrs.get(i).invList.postings.size() > this.daatPtrs
-//					  .get(j).invList.postings.size()) {
-//				  InvList tmpInvList = this.daatPtrs.get(i).invList;
-//				  this.daatPtrs.get(i).invList = this.daatPtrs.get(j).invList;
-//				  this.daatPtrs.get(j).invList = tmpInvList;
-//			  }
-//		  }
-//	  }
 	  
 	  DaaTPtr ptr0 = this.daatPtrs.get(0);
 
 	  EVALUATEDOCUMENTS: for (; ptr0.nextDoc < ptr0.invList.postings.size(); ptr0.nextDoc++) {
 		  
 		  int ptr0Docid = ptr0.invList.getDocid(ptr0.nextDoc);
-		  System.out.println(QryEval.getExternalDocid(ptr0Docid));
 		  // get positions.
 		  Vector<Integer> posting = ptr0.invList.postings.get(ptr0.nextDoc).positions; 
 
@@ -141,8 +127,9 @@ public class QryopIlNear extends QryopIl {
 			  DaaTPtr ptrj = this.daatPtrs.get(j);
 
 			  while (true) {
-				  if (ptrj.nextDoc >= ptrj.invList.postings.size())
+				  if (ptrj.nextDoc >= ptrj.invList.postings.size()){
 					  break EVALUATEDOCUMENTS; // No more docs can match
+				  }
 				  else if (ptrj.invList.getDocid(ptrj.nextDoc) > ptr0Docid)
 					  continue EVALUATEDOCUMENTS; // The ptr0docid can't
 				  // match.
@@ -152,7 +139,7 @@ public class QryopIlNear extends QryopIl {
 					  Vector<Integer> postingForPtrJ = ptrj.invList.postings.get(ptrj.nextDoc).positions;
 					  posting = tmp(posting,postingForPtrJ);
 					  if(posting.size()==0){
-						  break EVALUATEDOCUMENTS;
+						  continue EVALUATEDOCUMENTS;
 					  }
 					  break;
 					  
@@ -162,11 +149,17 @@ public class QryopIlNear extends QryopIl {
 
 		  // The ptr0Docid matched all query arguments, so save it.
 		  result.invertedList.appendPosting(ptr0Docid, posting);
+		  if(r instanceof RetrievalModelRankedBoolean){
+			  result.docScores.add(ptr0Docid, posting.size());
+		  }
+		  else if(r instanceof RetrievalModelUnrankedBoolean){
+			  result.docScores.add(ptr0Docid, (float)1.0);
+		  }
 		  
 	  }
 
 	  freeDaaTPtrs();
-
+	  
 	  return result;
   }
 

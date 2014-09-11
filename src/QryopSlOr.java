@@ -39,7 +39,7 @@ public class QryopSlOr extends QryopSl {
    */
   public QryResult evaluate(RetrievalModel r) throws IOException {
 
-    if (r instanceof RetrievalModelUnrankedBoolean)
+    if (r instanceof RetrievalModelUnrankedBoolean || r instanceof RetrievalModelRankedBoolean)
       return (evaluateBoolean (r));
 
     return null;
@@ -64,15 +64,7 @@ public class QryopSlOr extends QryopSl {
 		Set<Integer> currentIDListIndex  = new HashSet<Integer>();
 		Set<Integer> completedListIndex = new HashSet<Integer>();
 		
-//		for(int i=0; i<this.daatPtrs.size();i++){
-//			DaaTPtr ptrj = this.daatPtrs.get(i);
-//			while(ptrj.nextDoc < ptrj.scoreList.scores.size()){
-//				System.out.println(QryEval.getExternalDocid(ptrj.scoreList.getDocid(ptrj.nextDoc)));
-//				ptrj.nextDoc++;
-//			}
-//			System.out.println();
-//		}
-//		System.exit(0);
+
 		EVALUATEDOCUMENTS:
 		while(true){
 			//identify the minimum current id
@@ -97,6 +89,7 @@ public class QryopSlOr extends QryopSl {
 				else if(ptrj.scoreList.getDocid(ptrj.nextDoc)==crtDocId){
 					currentIDListIndex.add(i);
 					score = Math.max(score, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
+					
 				}
 			}
 			result.docScores.add(crtDocId, score);

@@ -52,7 +52,6 @@ public class QryEval {
     
 	  
 
-    // must supply parameter file
     if (args.length < 1) {
       System.err.println(usage);
       System.exit(1);
@@ -79,7 +78,13 @@ public class QryEval {
 
     // open the index
     READER = DirectoryReader.open(FSDirectory.open(new File(params.get("indexPath"))));
-    
+    RetrievalModel model = null;
+    if(params.get("retrievalAlgorithm").toLowerCase().equals("unrankedboolean")){
+    	model = new RetrievalModelUnrankedBoolean();
+    }
+    else {
+    	model = new RetrievalModelRankedBoolean();
+    }
     String QueryFilePath = params.get("queryFilePath");
     
     if (READER == null) {
@@ -88,9 +93,8 @@ public class QryEval {
     }
 
     DocLengthStore s = new DocLengthStore(READER);
+    
 
-    RetrievalModel model = new RetrievalModelUnrankedBoolean();
-    //
     BufferedReader input = new BufferedReader(new FileReader(QueryFilePath));
     String line2="";
     while((line2=input.readLine())!=null){
@@ -122,7 +126,6 @@ public class QryEval {
 
     // Later HW assignments will use more RAM, so you want to be aware
     // of how much memory your program uses.
-
     printMemoryUsage(true);
 
   }
@@ -345,14 +348,18 @@ public class QryEval {
 		 * For empyt result
 		 * 10 	Q0 	dummy 	1 	0	run-1
 		*/
-		
+
+//		long time = System.currentTimeMillis();
+		result.sortResults();
+//		long time_for_sorting = System.currentTimeMillis() - time;
+//		System.out.println("took " + time_for_sorting +"   for sorting");
 		if (result.docScores.scores.size() < 1) {
-			writer.write((queryName + " Q0 dummy 1 0 run-1"+"\n"));
+			writer.write((queryName + "\t"+"Q0" + "\t" + "dummy"+"\t"+"1"+"\t"+"0"+"\t"+"run-1"+"\n"));
 		} else {
-			for (int i = 0; i < Math.min(100, result.docScores.scores.size()); i++) {
-				writer.write(queryName + " Q0 "
-						+ getExternalDocid(result.docScores.getDocid(i)) + " "
-						+ result.docScores.getDocidScore(i) + " " + "run-1"+"\n");
+			for (int i = 0; i < Math.min(100,result.docScores.scores.size()); i++) {
+				writer.write(queryName  +"\t"+"Q0"+"\t"
+						+ getExternalDocid(result.docScores.getDocid(i)) +"\t"+String.valueOf(i+1)+"\t"
+						+ result.docScores.getDocidScore(i) +"\t"+"run-1"+"\n");
 			}
 		}
 

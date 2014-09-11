@@ -24,7 +24,7 @@ public class ScoreList {
 	public int compareTo(ScoreListEntry entry) {
 		// TODO verify the sort order for this compareTo method in the case
 		// of comparing scores.Already verified for names but not for scores
-		int i = Double.compare(this.score, entry.score);
+		int i = Double.compare(entry.score,this.score);
 		if(i!=0){
 			return i;
 		}

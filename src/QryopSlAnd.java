@@ -39,10 +39,10 @@ public class QryopSlAnd extends QryopSl {
    */
   public QryResult evaluate(RetrievalModel r) throws IOException {
 
-    if (r instanceof RetrievalModelUnrankedBoolean)
-      return (evaluateBoolean (r));
+	  if (r instanceof RetrievalModelUnrankedBoolean || r instanceof RetrievalModelRankedBoolean)
+	      return (evaluateBoolean (r));
 
-    return null;
+	    return null;
   }
 
   /**
