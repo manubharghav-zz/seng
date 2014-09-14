@@ -98,7 +98,7 @@ public class QryEval {
     BufferedReader input = new BufferedReader(new FileReader(QueryFilePath));
     String line2="";
     while((line2=input.readLine())!=null){
-    	
+    	long time = System.currentTimeMillis();
     	String[] splits = line2.split(":");
     	String query_num = splits[0];
     	String query= splits[1];
@@ -112,6 +112,7 @@ public class QryEval {
     	catch(Exception e){
     		System.out.println(e +" occured while processing "  +  line2);
     	}
+//    	System.out.println((System.currentTimeMillis() - time));
     }
     
     try{
@@ -314,7 +315,7 @@ public class QryEval {
    * @throws IOException 
    */
   static void printResults(String queryName, QryResult result) throws IOException {
-
+	 
     System.out.println(queryName + ":  ");
     result.sortResults();
     if (result.docScores.scores.size() < 1) {

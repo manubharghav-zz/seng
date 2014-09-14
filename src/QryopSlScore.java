@@ -78,6 +78,10 @@ public class QryopSlScore extends QryopSl {
 		// Evaluate the query argument.
 
 		QryResult result = args.get(0).evaluate(r);
+		
+		if(result.docScores.scores.size()==result.invertedList.df){
+			result.docScores.scores.clear();
+		}
 
 		// Each pass of the loop computes a score for one document. Note:
 		// If the evaluate operation above returned a score list (which is
@@ -116,6 +120,10 @@ public class QryopSlScore extends QryopSl {
 		// Evaluate the query argument.
 
 		QryResult result = args.get(0).evaluate(r);
+		
+		if(result.docScores.scores.size()==result.invertedList.df){
+			result.docScores.scores.clear();
+		}
 
 		// Each pass of the loop computes a score for one document. Note:
 		// If the evaluate operation above returned a score list (which is

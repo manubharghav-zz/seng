@@ -1,4 +1,4 @@
-queryFilePath=/home/manu/study/search_engines/project1/test.in
+queryFilePath=/home/manu/study/search_engines/project1/seng/resources/queries_1.txt
 indexPath=/home/manu/study/search_engines/index-big
-trecEvalOutputPath=/home/manu/study/search_engines/project1/pro.out
+trecEvalOutputPath=/home/manu/study/search_engines/project1/seng/results/queries_1_unranked.out
 retrievalAlgorithm=UnrankedBoolean
