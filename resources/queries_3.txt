@@ -1,7 +1,7 @@
 10:#AND(#NEAR/3(cheap.title internet.title) #NEAR/3(cheap internet))
 12:#OR(dj.title dj.inlink)
 26:#NEAR/3(lower heart rate)
-29:#NEAR/3(#OR(#NEAR/3(ps 2) PS2 #NEAR/2(Playstation 2)) games)
+29:#OR(#NEAR/3(ps 2 games) #NEAR/3(PS2 games) #NEAR/3(Playstation 2 games))
 33:#NEAR/4(#SYN(elliptical cross) #SYN(trainer machine))
 52:#OR(avp avp.title #AND(avp.title avp.body))
 71:#OR(#NEAR/4(living.title india.title) #AND(living india))
