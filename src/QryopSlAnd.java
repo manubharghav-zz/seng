@@ -111,6 +111,7 @@ public class QryopSlAnd extends QryopSl {
 	    if (ptrj.scoreList.getDocid (ptrj.nextDoc) < ptr0Docid)
 	      ptrj.nextDoc ++;			// Not yet at the right doc.
 	  else {
+		  // this ensures that the and score computation happens independant of the choice of the retrieval model.
 		  docScore = Math.min(docScore, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
 	      break;// ptrj matches ptr0Docid
 	  }

@@ -19,7 +19,12 @@ public class ScoreList {
       this.docid = docid;
       this.score = score;
     }
-
+    
+    
+    	/*
+		 * The scorelist entry class impements the comparable interface so that
+		 * it becomes easy on later to sort the result set.
+		 */
 	@Override
 	public int compareTo(ScoreListEntry entry) {
 		// TODO verify the sort order for this compareTo method in the case

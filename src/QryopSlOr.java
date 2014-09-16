@@ -64,13 +64,15 @@ public class QryopSlOr extends QryopSl {
 		}
 		int crtDocId = Integer.MAX_VALUE;
 		double score=0.0;
-		Set<Integer> currentIDListIndex  = new HashSet<Integer>();
-		Set<Integer> completedListIndex = new HashSet<Integer>();
+		Set<Integer> currentIDListIndex  = new HashSet<Integer>();// list of all those docpts which contain the minimum id.
+		Set<Integer> completedListIndex = new HashSet<Integer>(); // list of all those docptrs which have been exhausted(completely parsed).
 		
 		
 		EVALUATEDOCUMENTS:
 		while(true){
-			//identify the minimum current id
+			// identify the minimum current id. and keep track of the all those
+			// docptr which have the minimum id in their lists. So that you
+			// could just update all those lists in one go.
 			for(int i=0;i<this.daatPtrs.size();i++){
 				
 				DaaTPtr ptrj = this.daatPtrs.get(i);
