@@ -92,6 +92,9 @@ public class QryopIlNear extends QryopIl {
 	  syntaxCheckArgResults(this.daatPtrs);
 
 	  QryResult result = new QryResult();
+		if(this.daatPtrs.size()==0){
+			return result;
+		}
 	  result.invertedList.field = new String(
 			  this.daatPtrs.get(0).invList.field);
 

@@ -57,14 +57,17 @@ public class QryopSlOr extends QryopSl {
 		// Initialization
 
 		allocDaaTPtrs(r);
+
 		QryResult result = new QryResult();
-		
+		if(this.daatPtrs.size()==0){
+			return result;
+		}
 		int crtDocId = Integer.MAX_VALUE;
 		double score=0.0;
 		Set<Integer> currentIDListIndex  = new HashSet<Integer>();
 		Set<Integer> completedListIndex = new HashSet<Integer>();
 		
-
+		
 		EVALUATEDOCUMENTS:
 		while(true){
 			//identify the minimum current id

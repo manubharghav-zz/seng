@@ -58,6 +58,11 @@ public class QryopSlAnd extends QryopSl {
 
     allocDaaTPtrs (r);
     QryResult result = new QryResult ();
+    
+    // a null check to terminate execution.
+	if(this.daatPtrs.size()==0){
+		return result;
+	}
 
     //  Sort the arguments so that the shortest lists are first.  This
     //  improves the efficiency of exact-match AND without changing

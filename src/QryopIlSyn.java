@@ -48,8 +48,12 @@ public class QryopIlSyn extends QryopIl {
 	  syntaxCheckArgResults(this.daatPtrs);
 
 	  QryResult result = new QryResult();
+		if(this.daatPtrs.size()==0){
+			return result;
+		}
 	  result.invertedList.field = new String(
 			  this.daatPtrs.get(0).invList.field);
+	  
 
 	  // Each pass of the loop adds 1 document to result until all of
 	  // the inverted lists are depleted. When a list is depleted, it

@@ -80,9 +80,11 @@ public class QryEval {
     READER = DirectoryReader.open(FSDirectory.open(new File(params.get("indexPath"))));
     RetrievalModel model = null;
     if(params.get("retrievalAlgorithm").toLowerCase().equals("unrankedboolean")){
+    	System.out.println("unranked Boolean");
     	model = new RetrievalModelUnrankedBoolean();
     }
     else {
+    	System.out.println("ranked boolean");
     	model = new RetrievalModelRankedBoolean();
     }
     String QueryFilePath = params.get("queryFilePath");
@@ -97,8 +99,9 @@ public class QryEval {
 
     BufferedReader input = new BufferedReader(new FileReader(QueryFilePath));
     String line2="";
+    long time = System.currentTimeMillis();
     while((line2=input.readLine())!=null){
-    	long time = System.currentTimeMillis();
+    	
     	String[] splits = line2.split(":");
     	String query_num = splits[0];
     	String query= splits[1];
@@ -112,9 +115,9 @@ public class QryEval {
     	catch(Exception e){
     		System.out.println(e +" occured while processing "  +  line2);
     	}
-//    	System.out.println((System.currentTimeMillis() - time));
+    	
     }
-    
+    System.out.println((System.currentTimeMillis() - time));
     try{
     	input.close();
     	writer.close();
@@ -257,7 +260,6 @@ public class QryEval {
     	  String word = fields.nextToken();
     	  String[] tokenizedWord = tokenizeQuery(word);
     	  if(tokenizedWord.length>0){
-    		  
     	  
 	    	  if(fields.hasMoreTokens()){
 	    		  currentOp.add(new QryopIlTerm((tokenizedWord[0]),fields.nextToken()));
