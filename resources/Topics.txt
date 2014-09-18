@@ -1,0 +1,207 @@
+<topic number="10" type="faceted">
+  <query>cheap internet</query>
+  <description>I'm looking for cheap (i.e. low-cost) internet service.
+  </description>
+  <subtopic number="1" type="inf">
+    What are some low-cost broadband internet providers?
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Do any internet providers still sell dial-up?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    Who can provide inexpensive digital cable television bundled with
+    internet service?
+  </subtopic>
+  <subtopic number="4" type="nav">
+    I'm looking for the Vonage homepage.
+  </subtopic>
+  <subtopic number="5" type="inf">
+    Find me some providers of free wireless internet access.
+  </subtopic>
+  <subtopic number="6" type="inf">
+    I want to find cheap DSL providers.
+  </subtopic>
+  <subtopic number="7" type="inf">
+    Is there a way to get internet access without phone service?
+  </subtopic>
+  <subtopic number="8" type="nav">
+    Take me to Comcast's homepage.
+  </subtopic>
+</topic>
+<topic number="12" type="faceted">
+  <query>djs</query>
+  <description>I'm looking to hire a disc jockey.
+  </description>
+  <subtopic number="1" type="inf">
+    I'm looking for DJs that specialize in hip-hop music.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    I want to hire a DJ for a wedding.
+  </subtopic>
+  <subtopic number="3" type="inf">
+    How do I become a radio disc jockey?
+  </subtopic>
+  <subtopic number="4" type="inf">
+    What jobs are available for disc jockeys?
+  </subtopic>
+</topic>
+<topic number="26" type="faceted">
+  <query>lower heart rate</query>
+  <description>How can I lower my heart rate?
+  </description>
+  <subtopic number="1" type="inf">
+    What causes the heart to beat faster or slower?
+  </subtopic>
+  <subtopic number="2" type="inf">
+    What is a normal heart rate when a person is resting?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    How can I lower my heart rate?
+  </subtopic>
+  <subtopic number="4" type="inf">
+    Is a higher heart rate related to high blood pressure or
+    cholesterol?
+  </subtopic>
+</topic>
+<topic number="29" type="faceted">
+  <query>ps 2 games</query>
+  <description>Find information, reviews, and cheat codes for
+  Playstation 2 games.
+  </description>
+  <subtopic number="1" type="inf">
+    Find reviews of PlayStation 2 games.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Where can I find cheat codes for PlayStation 2 games?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    I'm looking for sites that announce new PlayStation 2 games.
+  </subtopic>
+  <subtopic number="4" type="inf">
+    Where can I buy used PlayStation 2 games?
+  </subtopic>
+  <subtopic number="5" type="inf">
+    What are the specifications of the PlayStation 2 console?
+  </subtopic>
+</topic>
+<topic number="33" type="faceted">
+  <query>elliptical trainer</query>
+  <description>Find information about elliptical trainer machines.
+  </description>
+  <subtopic number="1" type="inf">
+    I'm looking for reviews of elliptical machines.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Where can I buy a used or discounted elliptical trainer?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    What are the benefits of an elliptical trainer compared to other
+    fitness machines?
+  </subtopic>
+  <subtopic number="4" type="inf">
+    What are the best elliptical trainers for home use?
+  </subtopic>
+</topic>
+<topic number="52" type="ambiguous">
+  <query>avp</query>
+  <description>
+    Find information about events sponsored by AVP, the Association of
+    Volleyball Professionals.
+  </description>
+  <subtopic number="1" type="nav">
+    Go to the homepage for the AVP, sponsor of professional beach
+    volleyball events.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Find information about pro beach volleyball tournaments and events
+    sponsored by AVP.
+  </subtopic>
+  <subtopic number="3" type="nav">
+    Find the homepage for AVP antivirus software.
+  </subtopic>
+  <subtopic number="4" type="inf">
+    Find reviews of AVP antivirus software and comparisons to other products.
+  </subtopic>
+  <subtopic number="5" type="inf">
+    Find information about the Avon Products (AVP) company.
+  </subtopic>
+  <subtopic number="6" type="nav">
+    Find sites devoted to the "Alien vs. Predator" movie franchise.
+  </subtopic>
+  <subtopic number="7" type="inf">
+    Find information about Wilkes-Barre Scranton International Airport
+    in Pennsylvania (airport code AVP).
+  </subtopic>
+</topic>
+<topic number="71" type="faceted">
+  <query>living in india</query>
+  <description>
+    Find information about living in India.
+  </description>
+  <subtopic number="1" type="inf">
+    Find information about buying real estate in India.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Find information about how people live in India.
+  </subtopic>
+  <subtopic number="3" type="inf">
+    Find information for visitors and immigrants about living in India.
+  </subtopic>
+  <subtopic number="4" type="inf">
+    Find history about life and culture in India.
+  </subtopic>
+</topic>
+<topic number="102" type="faceted">
+  <query>fickle creek farm</query>
+  <description>
+    Find general information about Fickle Creek Farm in North Carolina
+  </description>
+  <subtopic number="1" type="inf">
+    Find general information about Fickle Creek Farm in North Carolina
+  </subtopic>
+  <subtopic number="2" type="nav">
+    Where is Fickle Creek Farm, and how can I go there?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    What products do they grow and/or raise there?
+  </subtopic>
+  <subtopic number="4" type="nav">
+    Where can I buy products that come from Fickle Creek Farm?
+  </subtopic>
+  <subtopic number="5" type="inv">
+    Find information about staying at the bed and breakfast at Fickle Creek Farm.
+  </subtopic>
+</topic>
+<topic number="149" type="faceted">
+  <query>uplift at yellowstone national park</query>
+  <description>
+      How likely is a volcanic eruption at Yellowstone National Park, and what
+      would be the effects of such an eruption?
+  </description>
+  <subtopic number="1" type="inf">
+      How likely is a volcanic eruption at Yellowstone National Park, and what
+      would be the effects of such an eruption?
+  </subtopic>
+  <subtopic number="2" type="inf">
+    information on ground elevation changes and movement resulting from ongoing
+    low-level geothermal activity at Yellowstone National Park
+  </subtopic>
+  <subtopic number="3" type="nav">
+    home page for the Yellowstone Volcano Observatory
+  </subtopic>
+</topic>
+<topic number="190" type="faceted">
+  <query>brooks brothers clearance</query>
+  <description>
+    Find Brooks Brothers online promotional coupons.
+  </description>
+  <subtopic number="1" type="nav">
+    Find Brooks Brothers online promotional coupons.
+  </subtopic>
+  <subtopic number="2" type="inf">
+    Where are Brooks Brothers outlet stores located?
+  </subtopic>
+  <subtopic number="3" type="inf">
+    Is Brooks Brothers catalog merchandise available at their outlet stores?
+  </subtopic>
+</topic>
