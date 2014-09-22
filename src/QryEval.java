@@ -353,7 +353,7 @@ public class QryEval {
 		*/
 
 //		long time = System.currentTimeMillis();
-		result.sortResults();
+		ArrayList<QryResult.Item> list = result.sortResults();
 //		long time_for_sorting = System.currentTimeMillis() - time;
 //		System.out.println("took " + time_for_sorting +"   for sorting");
 		if (result.docScores.scores.size() < 1) {
@@ -361,8 +361,8 @@ public class QryEval {
 		} else {
 			for (int i = 0; i < Math.min(100,result.docScores.scores.size()); i++) {
 				writer.write(queryName  +"\t"+"Q0"+"\t"
-						+ getExternalDocid(result.docScores.getDocid(i)) +"\t"+String.valueOf(i+1)+"\t"
-						+ result.docScores.getDocidScore(i) +"\t"+"run-1"+"\n");
+						+ list.get(i).getDocid() +"\t"+String.valueOf(i+1)+"\t"
+						+ list.get(i).getScore() +"\t"+"run-1"+"\n");
 			}
 		}
 
