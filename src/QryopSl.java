@@ -21,24 +21,25 @@ public abstract class QryopSl extends Qryop {
    *  @return void
    *  @throws IOException
    */
-  public void allocDaaTPtrs (RetrievalModel r) throws IOException {
+	public void allocDaaTPtrs(RetrievalModel r) throws IOException {
 
-    for (int i=0; i<this.args.size(); i++) {
+		for (int i = 0; i < this.args.size(); i++) {
 
-      //  If this argument doesn't return ScoreLists, wrap it
-      //  in a #SCORE operator.
+			// If this argument doesn't return ScoreLists, wrap it
+			// in a #SCORE operator.
 
-      if (! QryopSl.class.isInstance (this.args.get(i)))
-	this.args.set(i, new QryopSlScore(this.args.get(i)));
+			if (!QryopSl.class.isInstance(this.args.get(i))) {
+				this.args.set(i, new QryopSlScore(this.args.get(i)));
+			}
 
-      DaaTPtr ptri = new DaaTPtr ();
-      ptri.invList = null;
-      ptri.scoreList = this.args.get(i).evaluate(r).docScores;
-      ptri.nextDoc = 0;
-	
-      this.daatPtrs.add (ptri);
-    }
-  }
+			DaaTPtr ptri = new DaaTPtr();
+			ptri.invList = null;
+			ptri.scoreList = this.args.get(i).evaluate(r).docScores;
+			ptri.nextDoc = 0;
+
+			this.daatPtrs.add(ptri);
+		}
+	}
 
   /*
    *  Calculate the default score for the specified document if it

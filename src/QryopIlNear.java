@@ -51,29 +51,43 @@ public class QryopIlNear extends QryopIl {
 	 * Takes in 2 position lists and returns the entries from list 2 which are
 	 * less than n away from the corresponding terms in list 1
 	 */
-  private Vector<Integer> tmp(Vector<Integer> l1, Vector<Integer> l2) {
-	  Vector<Integer> result = new Vector<Integer>();
-	  int index_l1 = 0;
-	  int index_l2 = 0;
+	private Vector<Integer> tmp(Vector<Integer> l1, Vector<Integer> l2) {
+	  HashMap<Integer, Integer> result = new HashMap<Integer, Integer>();
 	  if(l1.size()==0 || l2.size()==0){
-		  return result;
+		  return new Vector<Integer>(result.values());
 	  }
-	  while (index_l2 < l2.size()) {
-		  if (l2.get(index_l2) < l1.get(index_l1)) {
-			  index_l2++;
-		  } else if (l2.get(index_l2) - l1.get(index_l1) - 1 < this.n) {
-			  result.add(l2.get(index_l2));
-			  index_l2++;
-		  } else if ((l2.get(index_l2) - l1.get(index_l1) >= n)) {
-			  if(index_l1==l1.size()-1){
-				  break;
+	  //	  while (index_l2 < l2.size()) {
+	  //		  if (l2.get(index_l2) < l1.get(index_l1)) {
+	  //			  index_l2++;
+	  //		  } else if (l2.get(index_l2) - l1.get(index_l1) - 1 < this.n) {
+	  //			  result.add(l2.get(index_l2));
+	  //			  index_l2++;
+	  //		  } else if ((l2.get(index_l2) - l1.get(index_l1) >= n)) {
+	  //			  if(index_l1==l1.size()-1){
+	  //				  break;
+	  //			  }
+	  //			  index_l1++;
+	  //		  }
+	  //
+	  //	  }
+
+	  for(int t2:l2){
+		  for(int t1:l1){
+			  if(t2>t1){
+				  if(t2 - t1 -1<n){
+					  if(!result.containsKey(t1)){
+						  result.put(t1, t2);
+					  }
+					  else{
+						  int tmp = Math.max(result.get(t1), t2);
+						  result.put(t1, tmp);
+					  }
+				  }
 			  }
-			  index_l1++;
 		  }
-
 	  }
 
-	  return result;
+	  return new Vector<Integer>(result.values());
 
   }
 
@@ -122,7 +136,13 @@ public class QryopIlNear extends QryopIl {
 		  int ptr0Docid = ptr0.invList.getDocid(ptr0.nextDoc);
 		  // get positions.
 		  Vector<Integer> posting = ptr0.invList.postings.get(ptr0.nextDoc).positions; 
-
+//		  System.out.println();
+//		  System.out.println(ptr0Docid);
+//		  if(!QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
+//			  
+//			  continue;
+//		  }
+//System.out.println(QryEval.getExternalDocid(ptr0Docid));
 		  // Do the other query arguments have the ptr0Docid?
 
 		  for (int j = 1; j < this.daatPtrs.size(); j++) {

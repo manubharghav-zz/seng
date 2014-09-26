@@ -61,7 +61,80 @@ public class QryopSlScore extends QryopSl {
 		else if (r instanceof RetrievalModelRankedBoolean) {
 			return (evaluateRankedBoolean(r));
 		}
+		else if (r instanceof RetrievalModelBM25){
+			return evaluateBM25(r);
+		}
 		return null;
+	}
+	
+	/**
+	 * Evaluate the query operator for okapi bm25 models.
+	 * 
+	 * @param r
+	 *            A retrieval model that controls how the operator behaves.
+	 * @return The result of evaluating the query.
+	 * @throws IOException
+	 */
+	
+	private QryResult evaluateBM25(RetrievalModel r) throws IOException {
+		// TODO Auto-generated method stub
+		RetrievalModelBM25 model = (RetrievalModelBM25) r;
+		QryResult result = args.get(0).evaluate(r);
+		DocLengthStore s = new DocLengthStore(QryEval.READER);
+		if (result.docScores.scores.size() == result.invertedList.df) {
+			result.docScores.scores.clear();
+		}
+		
+		
+		double tf_td;
+		double tf_q =1.0;
+		double tf_weight;
+		double user_weight;
+		double RSF;
+		double N =(double) QryEval.READER.numDocs();
+		
+		// parameters for the bm25 model.
+		double k_1 = model.k_1;
+		double k_3 = model.k_3;
+		double b = model.b;
+		double avg_doclen = QryEval.READER.getSumTotalTermFreq(result.invertedList.field) /
+			      (float) QryEval.READER.getDocCount (result.invertedList.field);
+		double score;
+
+		// Each pass of the loop computes a score for one document. Note:
+		// If the evaluate operation above returned a score list (which is
+		// very possible), this loop gets skipped.
+		RSF = Math.log((0.5 + N - result.invertedList.df)/ ((result.invertedList.df) + 0.5));
+		user_weight = ((k_3 + 1.0) * tf_q) / (k_3 + tf_q); 
+		System.out.println(user_weight);
+		for (int i = 0; i < result.invertedList.df; i++) {
+
+			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
+			// Unranked Boolean. All matching documents get a score of 1.0.
+
+			tf_td = (double) result.invertedList.getTf(i);
+			//System.out.println("ter_frequency" +tf_td);
+			
+			tf_weight = (tf_td)
+					/ (tf_td + (k_1 * ((1.0 - b)+(b * (s.getDocLength(
+							result.invertedList.field,
+							result.invertedList.getDocid(i)) / avg_doclen)))));
+			
+			
+			score = (RSF) * (tf_weight) * (user_weight);
+			//System.out.println(score);
+			result.docScores.add(result.invertedList.postings.get(i).docid,
+					(float) score);
+
+		}
+
+		// The SCORE operator should not return a populated inverted list.
+		// If there is one, replace it with an empty inverted list.
+
+		if (result.invertedList.df > 0)
+			result.invertedList = new InvList();
+
+		return result;
 	}
 
 	/**
@@ -91,6 +164,10 @@ public class QryopSlScore extends QryopSl {
 
 			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
 			// Unranked Boolean. All matching documents get a score of 1.0.
+//			if(!QryEval.getExternalDocid(result.invertedList.postings.get(i).docid).equals("clueweb09-en0009-25-22037")){
+//				  
+//				  continue;
+//			  }
 			if (r instanceof RetrievalModelRankedBoolean) {
 				result.docScores.add(result.invertedList.postings.get(i).docid,
 						(float) result.invertedList.postings.get(i).tf);

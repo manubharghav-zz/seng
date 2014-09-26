@@ -39,13 +39,29 @@ public class QryopSlAnd extends QryopSl {
    */
   public QryResult evaluate(RetrievalModel r) throws IOException {
 
-	  if (r instanceof RetrievalModelUnrankedBoolean || r instanceof RetrievalModelRankedBoolean)
+	  if (r instanceof RetrievalModelUnrankedBoolean || r instanceof RetrievalModelRankedBoolean){
 	      return (evaluateBoolean (r));
-
+	  }
+	  else if(r instanceof RetrievalModelIndri){
+		  return (evaluateIndri(r));
+	  }
 	    return null;
   }
-
+  
   /**
+   *  Evaluates the query operator for indri retrieval models,
+   *  including any child operators and returns the result.
+   *  @param r A retrieval model that controls how the operator behaves.
+   *  @return The result of evaluating the query.
+   *  @throws IOException
+   */
+
+  private QryResult evaluateIndri(RetrievalModel r) {
+	
+	return null;
+}
+
+/**
    *  Evaluates the query operator for boolean retrieval models,
    *  including any child operators and returns the result.
    *  @param r A retrieval model that controls how the operator behaves.
@@ -94,6 +110,11 @@ public class QryopSlAnd extends QryopSl {
 
       int ptr0Docid = ptr0.scoreList.getDocid (ptr0.nextDoc);
       double docScore = ptr0.scoreList.getDocidScore(ptr0.nextDoc);
+      
+//      if(QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
+//		  
+//		  System.out.println("found the document in uplift " + docScore);
+//	  }
 
       //  Do the other query arguments have the ptr0Docid?
 
@@ -112,6 +133,10 @@ public class QryopSlAnd extends QryopSl {
 	      ptrj.nextDoc ++;			// Not yet at the right doc.
 	  else {
 		  // this ensures that the and score computation happens independant of the choice of the retrieval model.
+//		  if(QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
+//			  
+//			  System.out.println("found the document in near " + ptrj.scoreList.getDocidScore(ptrj.nextDoc));
+//		  }
 		  docScore = Math.min(docScore, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
 	      break;// ptrj matches ptr0Docid
 	  }

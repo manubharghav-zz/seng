@@ -2,7 +2,7 @@
  * The Indri retrieval model.
  */
 
-public class RetrievalModelIndri {
+public class RetrievalModelIndri  extends RetrievalModel{
 	// parameters.
 
 	int mu;

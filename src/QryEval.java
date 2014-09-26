@@ -33,6 +33,7 @@ public class QryEval {
 
   public static IndexReader READER;
 
+
   //  Create and configure an English analyzer that will be used for
   //  query parsing.
 
@@ -79,14 +80,34 @@ public class QryEval {
     // open the index
     READER = DirectoryReader.open(FSDirectory.open(new File(params.get("indexPath"))));
     RetrievalModel model = null;
-    if(params.get("retrievalAlgorithm").toLowerCase().equals("unrankedboolean")){
+    String defaultOp = null;
+    String retrievalAlgorithm  = params.get("retrievalAlgorithm").toLowerCase();
+    if(retrievalAlgorithm.equals("unrankedboolean")){
     	System.out.println("unranked Boolean");
+    	defaultOp = "or";
     	model = new RetrievalModelUnrankedBoolean();
     }
-    else {
+    else if(retrievalAlgorithm.equals("rankedboolean")) {
+    	defaultOp = "or";
     	System.out.println("ranked boolean");
     	model = new RetrievalModelRankedBoolean();
     }
+    else if(retrievalAlgorithm.equals("bm25")) {
+    	defaultOp = "sum";
+    	System.out.println("bm25");
+    	model = new RetrievalModelBM25();
+    	model.setParameter("k_1", params.get("BM25:k_1"));
+    	model.setParameter("b", params.get("BM25:b"));
+    	model.setParameter("k_3", params.get("BM25:k_3"));
+    }
+    else if(retrievalAlgorithm.equals("indri")){
+    	defaultOp = "and";
+    	System.out.println("indri");
+    	model = new RetrievalModelIndri();
+    	model.setParameter("mu", params.get("Indri:mu"));
+    	model.setParameter("lambda", params.get("Indri:lambda"));
+    }
+    
     String QueryFilePath = params.get("queryFilePath");
     
     if (READER == null) {
@@ -108,7 +129,7 @@ public class QryEval {
     	System.out.println("Processing query: " + query_num );
     	try{
     		Qryop qTree;
-    		qTree = parseQuery (query);
+    		qTree = parseQuery (defaultOp,query);
     	    printResultstoFile(query_num, qTree.evaluate (model),writer);
     		
     	}
@@ -185,6 +206,7 @@ public class QryEval {
 
   /**
    * parseQuery converts a query string into a query tree.
+ * @param model 
    * 
    * @param qString
    *          A string containing a query.
@@ -192,7 +214,7 @@ public class QryEval {
    *          A query tree
    * @throws IOException
    */
-  static Qryop parseQuery(String qString) throws IOException {
+  static Qryop parseQuery(String defaultOp, String qString) throws IOException {
 
     Qryop currentOp = null;
     Stack<Qryop> stack = new Stack<Qryop>();
@@ -203,7 +225,8 @@ public class QryEval {
     qString = qString.trim();
 
     if (qString.charAt(0) != '#') {
-      qString = "#or(" + qString + ")";
+    	qString = "#" + defaultOp +"(" + qString + ")";
+    	
     }
 
     // Tokenize the query.
@@ -215,69 +238,92 @@ public class QryEval {
     // efficiency and clarity, the query operator on the top of the
     // stack is also stored in currentOp.
 
-    while (tokens.hasMoreTokens()) {
+		while (tokens.hasMoreTokens()) {
 
-      token = tokens.nextToken();
+			token = tokens.nextToken();
 
-      if (token.matches("[/ ,(\t\n\r]")) {
-        // Ignore most delimiters.
-      } else if (token.equalsIgnoreCase("#and")) {
-        currentOp = new QryopSlAnd();
-        stack.push(currentOp);
-      } else if (token.equalsIgnoreCase("#or")) {
-          currentOp = new QryopSlOr();
-          stack.push(currentOp);
-      } else if (token.toLowerCase().contains("#near")) {
-    	  String[] splits  = token.split("/");
-    	  
-          currentOp = new QryopIlNear(Integer.parseInt(splits[1]));
-          stack.push(currentOp);
-      } else if (token.equalsIgnoreCase("#syn")) {
-        currentOp = new QryopIlSyn();
-        stack.push(currentOp);
-      } else if (token.startsWith(")")) { // Finish current query operator.
-        // If the current query operator is not an argument to
-        // another query operator (i.e., the stack is empty when it
-        // is removed), we're done (assuming correct syntax - see
-        // below). Otherwise, add the current operator as an
-        // argument to the higher-level operator, and shift
-        // processing back to the higher-level operator.
+			if (token.matches("[/ ,(\t\n\r]")) {
+				// Ignore most delimiters.
+			} else if (token.equalsIgnoreCase("#and")) {
+				currentOp = new QryopSlAnd();
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#or")) {
+				currentOp = new QryopSlOr();
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#sum")) {
+				currentOp = new QryopSlSum();
+				stack.push(currentOp);
+			} else if (token.toLowerCase().contains("#near")) {
+				String[] splits = token.split("/");
 
-        stack.pop();
+				currentOp = new QryopIlNear(Integer.parseInt(splits[1]));
+				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#syn")) {
+				currentOp = new QryopIlSyn();
+				stack.push(currentOp);
+			} else if (token.startsWith(")")) { // Finish current query
+												// operator.
+				// If the current query operator is not an argument to
+				// another query operator (i.e., the stack is empty when it
+				// is removed), we're done (assuming correct syntax - see
+				// below). Otherwise, add the current operator as an
+				// argument to the higher-level operator, and shift
+				// processing back to the higher-level operator.
 
-        if (stack.empty())
-          break;
+				stack.pop();
 
-        Qryop arg = currentOp;
-        currentOp = stack.peek();
-        currentOp.add(arg);
-      } else {
+				if (stack.empty()){
+					if(tokens.hasMoreTokens()){
+						Qryop arg = currentOp;
+						if(defaultOp.equals("or")){
+							currentOp = new QryopSlOr();
+							currentOp.add(arg);
+						}
+						else if(defaultOp.equals("sum")){
+							currentOp = new QryopSlSum();
+							currentOp.add(arg);
+						}
+						else if(defaultOp.equals("and")){
+							currentOp = new QryopSlAnd();
+							currentOp.add(arg);
+						}
+					}
+					else{
+						break;
+					}
+				}
+				else{
 
-        // NOTE: You should do lexical processing of the token before
-        // creating the query term, and you should check to see whether
-        // the token specifies a particular field (e.g., apple.title).
-    	  StringTokenizer fields = new StringTokenizer(token,".",false);
-    	  String word = fields.nextToken();
-    	  String[] tokenizedWord = tokenizeQuery(word);
-    	  if(tokenizedWord.length>0){
-    	  
-	    	  if(fields.hasMoreTokens()){
-	    		  currentOp.add(new QryopIlTerm((tokenizedWord[0]),fields.nextToken()));
-	    	  }
-	    	  else{
-	    		  currentOp.add(new QryopIlTerm((tokenizedWord[0])));
-	    	  }
-    	  }
-        
-      }
-    }
+				Qryop arg = currentOp;
+				currentOp = stack.peek();
+				currentOp.add(arg);
+				}
+			} else {
+
+				// NOTE: You should do lexical processing of the token before
+				// creating the query term, and you should check to see whether
+				// the token specifies a particular field (e.g., apple.title).
+				StringTokenizer fields = new StringTokenizer(token, ".", false);
+				String word = fields.nextToken();
+				String[] tokenizedWord = tokenizeQuery(word);
+				if (tokenizedWord.length > 0) {
+
+					if (fields.hasMoreTokens()) {
+						currentOp.add(new QryopIlTerm((tokenizedWord[0]),
+								fields.nextToken()));
+					} else {
+						currentOp.add(new QryopIlTerm((tokenizedWord[0])));
+					}
+				}
+
+			}
+		}
 
     // A broken structured query can leave unprocessed tokens on the
     // stack, so check for that.
 
     if (tokens.hasMoreTokens()) {
-      System.err.println("Error:  Query syntax is incorrect.  " + qString);
-      return null;
+    	System.err.println("Error while parsing query. Please loook");
     }
 
     return currentOp;
