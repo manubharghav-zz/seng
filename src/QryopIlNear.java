@@ -11,232 +11,209 @@
 import java.io.*;
 import java.util.*;
 
-
-
-
-
 public class QryopIlNear extends QryopIl {
-	
-	
+
 	// this variable stores the n parameter for the near operator
 	private int n = 1;
-	
-	
-	//Constructer to set the n parameter.
-	public QryopIlNear(int n){
+
+	// Constructer to set the n parameter.
+	public QryopIlNear(int n) {
 		this.n = n;
 	}
 
-  /**
-   *  It is convenient for the constructor to accept a variable number
-   *  of arguments. Thus new QryopIlSyn (arg1, arg2, arg3, ...).
-   */
-  public QryopIlNear(Qryop... q) {
-    for (int i = 0; i < q.length; i++)
-      this.args.add(q[i]);
-  }
+	/**
+	 * It is convenient for the constructor to accept a variable number of
+	 * arguments. Thus new QryopIlSyn (arg1, arg2, arg3, ...).
+	 */
+	public QryopIlNear(Qryop... q) {
+		for (int i = 0; i < q.length; i++)
+			this.args.add(q[i]);
+	}
 
-  /**
-   *  Appends an argument to the list of query operator arguments.  This
-   *  simplifies the design of some query parsing architectures.
-   *  @param {q} q The query argument (query operator) to append.
-   *  @return void
-   *  @throws IOException
-   */
-  public void add (Qryop a) {
-    this.args.add(a);
-  }
-  
-  	/*
+	/**
+	 * Appends an argument to the list of query operator arguments. This
+	 * simplifies the design of some query parsing architectures.
+	 * 
+	 * @param {q} q The query argument (query operator) to append.
+	 * @return void
+	 * @throws IOException
+	 */
+	public void add(Qryop a) {
+		this.args.add(a);
+	}
+
+	/*
 	 * Takes in 2 position lists and returns the entries from list 2 which are
 	 * less than n away from the corresponding terms in list 1
 	 */
 	private Vector<Integer> tmp(Vector<Integer> l1, Vector<Integer> l2) {
-	  HashMap<Integer, Integer> result = new HashMap<Integer, Integer>();
-	  if(l1.size()==0 || l2.size()==0){
-		  return new Vector<Integer>(result.values());
-	  }
-	  //	  while (index_l2 < l2.size()) {
-	  //		  if (l2.get(index_l2) < l1.get(index_l1)) {
-	  //			  index_l2++;
-	  //		  } else if (l2.get(index_l2) - l1.get(index_l1) - 1 < this.n) {
-	  //			  result.add(l2.get(index_l2));
-	  //			  index_l2++;
-	  //		  } else if ((l2.get(index_l2) - l1.get(index_l1) >= n)) {
-	  //			  if(index_l1==l1.size()-1){
-	  //				  break;
-	  //			  }
-	  //			  index_l1++;
-	  //		  }
-	  //
-	  //	  }
+		Vector<Integer> result = new Vector<Integer>();
+		if (l1.size() == 0 || l2.size() == 0) {
+			return new Vector<Integer>(result);
+		}
 
-	  for(int t2:l2){
-		  for(int t1:l1){
-			  if(t2>t1){
-				  if(t2 - t1 -1<n){
-					  if(!result.containsKey(t1)){
-						  result.put(t1, t2);
-					  }
-					  else{
-						  int tmp = Math.max(result.get(t1), t2);
-						  result.put(t1, tmp);
-					  }
-				  }
-			  }
-		  }
-	  }
+		int index_l1 = 0;
+		int index_l2 = 0;
+		while (index_l2 < l2.size() && index_l1 < l1.size()) {
+			if (l2.get(index_l2) == 3101) {
+				System.out.println();
+			}
+			if (l2.get(index_l2) < l1.get(index_l1)) {
+				index_l2++;
+			} else if (l2.get(index_l2) - l1.get(index_l1) <= this.n) {
+				result.add(l2.get(index_l2));
+				index_l2++;
+				index_l1++;
+			} else if ((l2.get(index_l2) - l1.get(index_l1) > n)) {
+				index_l1++;
+			}
 
-	  return new Vector<Integer>(result.values());
+		}
+		return result;
 
-  }
+	}
 
-  /**
-   *  Evaluates the query operator, including any child operators and
-   *  returns the result.
-   *  @param r A retrieval model that controls how the operator behaves.
-   *  @return The result of evaluating the query.
-   *  @throws IOException
-   */
-  public QryResult evaluate(RetrievalModel r) throws IOException {
+	/**
+	 * Evaluates the query operator, including any child operators and returns
+	 * the result.
+	 * 
+	 * @param r
+	 *            A retrieval model that controls how the operator behaves.
+	 * @return The result of evaluating the query.
+	 * @throws IOException
+	 */
+	public QryResult evaluate(RetrievalModel r) throws IOException {
 
-	  // Initialization
+		// Initialization
 
-	  allocDaaTPtrs(r);
-	  syntaxCheckArgResults(this.daatPtrs);
+		allocDaaTPtrs(r);
+		syntaxCheckArgResults(this.daatPtrs);
 
-	  QryResult result = new QryResult();
-		if(this.daatPtrs.size()==0){
+		QryResult result = new QryResult();
+		if (this.daatPtrs.size() == 0) {
 			return result;
 		}
-	  result.invertedList.field = new String(
-			  this.daatPtrs.get(0).invList.field);
+		result.invertedList.field = new String(
+				this.daatPtrs.get(0).invList.field);
 
-	  // Each pass of the loop adds 1 document to result until all of
-	  // the inverted lists are depleted. When a list is depleted, it
-	  // is removed from daatPtrs, so this loop runs until daatPtrs is empty.
+		// Each pass of the loop adds 1 document to result until all of
+		// the inverted lists are depleted. When a list is depleted, it
+		// is removed from daatPtrs, so this loop runs until daatPtrs is empty.
 
-	  // This implementation is intended to be clear. A more efficient
-	  // implementation would combine loops and use merge-sort.
-	  
-	  // doing a null check.
-	  Iterator<DaaTPtr> iter = this.daatPtrs.iterator();
-	  while(iter.hasNext()){
-		  if(iter.next().invList.df==0){
-			  iter.remove();
-		  }
-	  }
-	  
+		// This implementation is intended to be clear. A more efficient
+		// implementation would combine loops and use merge-sort.
 
-	  
-	  DaaTPtr ptr0 = this.daatPtrs.get(0);
+		// doing a null check.
+		Iterator<DaaTPtr> iter = this.daatPtrs.iterator();
+		while (iter.hasNext()) {
+			if (iter.next().invList.df == 0) {
+				iter.remove();
+			}
+		}
 
-	  EVALUATEDOCUMENTS: for (; ptr0.nextDoc < ptr0.invList.postings.size(); ptr0.nextDoc++) {
-		  
-		  int ptr0Docid = ptr0.invList.getDocid(ptr0.nextDoc);
-		  // get positions.
-		  Vector<Integer> posting = ptr0.invList.postings.get(ptr0.nextDoc).positions; 
-//		  System.out.println();
-//		  System.out.println(ptr0Docid);
-//		  if(!QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
-//			  
-//			  continue;
-//		  }
-//System.out.println(QryEval.getExternalDocid(ptr0Docid));
-		  // Do the other query arguments have the ptr0Docid?
+		DaaTPtr ptr0 = this.daatPtrs.get(0);
 
-		  for (int j = 1; j < this.daatPtrs.size(); j++) {
+		EVALUATEDOCUMENTS: for (; ptr0.nextDoc < ptr0.invList.postings.size(); ptr0.nextDoc++) {
 
-			  DaaTPtr ptrj = this.daatPtrs.get(j);
+			int ptr0Docid = ptr0.invList.getDocid(ptr0.nextDoc);
+			// get positions.
+			Vector<Integer> posting = ptr0.invList.postings.get(ptr0.nextDoc).positions;
 
-			  while (true) {
-				  if (ptrj.nextDoc >= ptrj.invList.postings.size()){
-					  break EVALUATEDOCUMENTS; // No more docs can match
-				  }
-				  else if (ptrj.invList.getDocid(ptrj.nextDoc) > ptr0Docid)
-					  continue EVALUATEDOCUMENTS; // The ptr0docid can't
-				  // match.
-				  else if (ptrj.invList.getDocid(ptrj.nextDoc) < ptr0Docid)
-					  ptrj.nextDoc++; // Not yet at the right doc.
-				  else {
-					  Vector<Integer> postingForPtrJ = ptrj.invList.postings.get(ptrj.nextDoc).positions;
-					  posting = tmp(posting,postingForPtrJ);
-					  if(posting.size()==0){
-						  continue EVALUATEDOCUMENTS;
-					  }
-					  break;
-					  
-				  }
-			  }
-		  }
+			for (int j = 1; j < this.daatPtrs.size(); j++) {
 
-		  // The ptr0Docid matched all query arguments, so save it.
-		  result.invertedList.appendPosting(ptr0Docid, posting);
-		  if(r instanceof RetrievalModelRankedBoolean){
-			  result.docScores.add(ptr0Docid, posting.size());
-		  }
-		  else if(r instanceof RetrievalModelUnrankedBoolean){
-			  result.docScores.add(ptr0Docid, (float)1.0);
-		  }
-		  
-	  }
+				DaaTPtr ptrj = this.daatPtrs.get(j);
 
-	  freeDaaTPtrs();
-	  
-	  return result;
-  }
+				while (true) {
+					if (ptrj.nextDoc >= ptrj.invList.postings.size()) {
+						break EVALUATEDOCUMENTS; // No more docs can match
+					} else if (ptrj.invList.getDocid(ptrj.nextDoc) > ptr0Docid)
+						continue EVALUATEDOCUMENTS; // The ptr0docid can't
+					// match.
+					else if (ptrj.invList.getDocid(ptrj.nextDoc) < ptr0Docid)
+						ptrj.nextDoc++; // Not yet at the right doc.
+					else {
+						Vector<Integer> postingForPtrJ = ptrj.invList.postings
+								.get(ptrj.nextDoc).positions;
+						posting = tmp(posting, postingForPtrJ);
+						if (posting.size() == 0) {
+							continue EVALUATEDOCUMENTS;
+						}
+						break;
 
-  /**
-   *  Return the smallest unexamined docid from the DaaTPtrs.
-   *  @return The smallest internal document id.
-   */
-  public int getSmallestCurrentDocid() {
+					}
+				}
+			}
 
-	  int nextDocid = Integer.MAX_VALUE;
+			// The ptr0Docid matched all query arguments, so save it.
+			result.invertedList.appendPosting(ptr0Docid, posting);
+			if (r instanceof RetrievalModelRankedBoolean) {
+				result.docScores.add(ptr0Docid, posting.size());
+			} else if (r instanceof RetrievalModelUnrankedBoolean) {
+				result.docScores.add(ptr0Docid, (float) 1.0);
+			}
 
-	  for (int i = 0; i < this.daatPtrs.size(); i++) {
-		  DaaTPtr ptri = this.daatPtrs.get(i);
-		  if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
-			  nextDocid = ptri.invList.getDocid(ptri.nextDoc);
-	  }
+		}
 
-	  return (nextDocid);
-  }
+		freeDaaTPtrs();
 
-  /**
-   *  syntaxCheckArgResults does syntax checking that can only be done
-   *  after query arguments are evaluated.
-   *  @param ptrs A list of DaaTPtrs for this query operator.
-   *  @return True if the syntax is valid, false otherwise.
-   */
-  public Boolean syntaxCheckArgResults (List<DaaTPtr> ptrs) {
+		return result;
+	}
 
-    for (int i=0; i<this.args.size(); i++) {
+	/**
+	 * Return the smallest unexamined docid from the DaaTPtrs.
+	 * 
+	 * @return The smallest internal document id.
+	 */
+	public int getSmallestCurrentDocid() {
 
-      if (! (this.args.get(i) instanceof QryopIl)) 
-	QryEval.fatalError ("Error:  Invalid argument in " +
-			    this.toString());
-      else
-	if ((i>0) &&
-	    (! ptrs.get(i).invList.field.equals (ptrs.get(0).invList.field)))
-	  QryEval.fatalError ("Error:  Arguments must be in the same field:  " +
-			      this.toString());
-    }
+		int nextDocid = Integer.MAX_VALUE;
 
-    return true;
-  }
+		for (int i = 0; i < this.daatPtrs.size(); i++) {
+			DaaTPtr ptri = this.daatPtrs.get(i);
+			if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
+				nextDocid = ptri.invList.getDocid(ptri.nextDoc);
+		}
 
-  /*
-   *  Return a string version of this query operator.  
-   *  @return The string version of this query operator.
-   */
-  public String toString(){
-    
-    String result = new String ();
+		return (nextDocid);
+	}
 
-    for (Iterator<Qryop> i = this.args.iterator(); i.hasNext(); )
-      result += (i.next().toString() + " ");
+	/**
+	 * syntaxCheckArgResults does syntax checking that can only be done after
+	 * query arguments are evaluated.
+	 * 
+	 * @param ptrs
+	 *            A list of DaaTPtrs for this query operator.
+	 * @return True if the syntax is valid, false otherwise.
+	 */
+	public Boolean syntaxCheckArgResults(List<DaaTPtr> ptrs) {
 
-    return ("#SYN( " + result + ")");
-  }
+		for (int i = 0; i < this.args.size(); i++) {
+
+			if (!(this.args.get(i) instanceof QryopIl))
+				QryEval.fatalError("Error:  Invalid argument in "
+						+ this.toString());
+			else if ((i > 0)
+					&& (!ptrs.get(i).invList.field
+							.equals(ptrs.get(0).invList.field)))
+				QryEval.fatalError("Error:  Arguments must be in the same field:  "
+						+ this.toString());
+		}
+
+		return true;
+	}
+
+	/*
+	 * Return a string version of this query operator.
+	 * 
+	 * @return The string version of this query operator.
+	 */
+	public String toString() {
+
+		String result = new String();
+
+		for (Iterator<Qryop> i = this.args.iterator(); i.hasNext();)
+			result += (i.next().toString() + " ");
+
+		return ("#SYN( " + result + ")");
+	}
 }
