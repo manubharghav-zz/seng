@@ -13,6 +13,10 @@ import java.util.*;
 
 public class QryopSlScore extends QryopSl {
 
+	private int ctf;
+	private String field;
+	private DocLengthStore s;
+
 	/**
 	 * Construct a new SCORE operator. The SCORE operator accepts just one
 	 * argument.
@@ -60,13 +64,55 @@ public class QryopSlScore extends QryopSl {
 			return (evaluateBoolean(r));
 		else if (r instanceof RetrievalModelRankedBoolean) {
 			return (evaluateRankedBoolean(r));
-		}
-		else if (r instanceof RetrievalModelBM25){
+		} else if (r instanceof RetrievalModelBM25) {
 			return evaluateBM25(r);
+		}
+		else if(r instanceof RetrievalModelIndri){
+			return evaluateIndri(r);
 		}
 		return null;
 	}
 	
+	
+	public QryResult evaluateIndri(RetrievalModel r) throws IOException{
+		RetrievalModelIndri model = (RetrievalModelIndri) r;
+		QryResult result = args.get(0).evaluate(model);
+		if(s==null){
+			this.s = new DocLengthStore(QryEval.READER);
+		}
+		if (result.docScores.scores.size() == result.invertedList.df) {
+			result.docScores.scores.clear();
+		}
+		
+		this.ctf = result.invertedList.ctf;
+		this.field = result.invertedList.field;
+		
+		
+		long N = QryEval.READER.getSumTotalTermFreq(this.field);
+		double pMleTerm = ((double)this.ctf)/(N);
+		
+		for (int i = 0; i < result.invertedList.df; i++) {
+
+			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
+			// Indri. All matching documents get a score of 1.0.
+			double tf_td = (float) result.invertedList.getTf(i);
+			double score =  ((1-model.lambda)*pMleTerm)  + (model.lambda * ((tf_td +  model.mu * ( pMleTerm)) / (s.getDocLength(
+							result.invertedList.field,
+							result.invertedList.getDocid(i)) + model.mu)) ) ;
+//			System.out.println("em " + QryEval.getExternalDocid(result.invertedList.postings.get(i).docid));
+			result.docScores.add(result.invertedList.postings.get(i).docid,
+					(float) score);
+			
+		}
+		
+		
+		if (result.invertedList.df > 0)
+			result.invertedList = new InvList();
+
+		return result;
+		
+	}
+
 	/**
 	 * Evaluate the query operator for okapi bm25 models.
 	 * 
@@ -75,7 +121,7 @@ public class QryopSlScore extends QryopSl {
 	 * @return The result of evaluating the query.
 	 * @throws IOException
 	 */
-	
+
 	private QryResult evaluateBM25(RetrievalModel r) throws IOException {
 		// TODO Auto-generated method stub
 		RetrievalModelBM25 model = (RetrievalModelBM25) r;
@@ -84,45 +130,45 @@ public class QryopSlScore extends QryopSl {
 		if (result.docScores.scores.size() == result.invertedList.df) {
 			result.docScores.scores.clear();
 		}
-		
-		
+
 		double tf_td;
-		double tf_q =1.0;
+		double tf_q = 1.0;
 		double tf_weight;
 		double user_weight;
 		double RSF;
-		double N =(double) QryEval.READER.numDocs();
-		
+		double N = (double) QryEval.READER.numDocs();
+
 		// parameters for the bm25 model.
 		double k_1 = model.k_1;
 		double k_3 = model.k_3;
 		double b = model.b;
-		double avg_doclen = QryEval.READER.getSumTotalTermFreq(result.invertedList.field) /
-			      (float) QryEval.READER.getDocCount (result.invertedList.field);
+		double avg_doclen = QryEval.READER
+				.getSumTotalTermFreq(result.invertedList.field)
+				/ (float) QryEval.READER.getDocCount(result.invertedList.field);
 		double score;
 
 		// Each pass of the loop computes a score for one document. Note:
 		// If the evaluate operation above returned a score list (which is
 		// very possible), this loop gets skipped.
-		RSF = Math.log((0.5 + N - result.invertedList.df)/ ((result.invertedList.df) + 0.5));
-		user_weight = ((k_3 + 1.0) * tf_q) / (k_3 + tf_q); 
-		System.out.println(user_weight);
+		RSF = Math.log((0.5 + N - result.invertedList.df)
+				/ ((result.invertedList.df) + 0.5));
+		user_weight = ((k_3 + 1.0) * tf_q) / (k_3 + tf_q);
+//		System.out.println(user_weight);
 		for (int i = 0; i < result.invertedList.df; i++) {
 
 			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
 			// Unranked Boolean. All matching documents get a score of 1.0.
 
 			tf_td = (double) result.invertedList.getTf(i);
-			//System.out.println("ter_frequency" +tf_td);
-			
+			// System.out.println("ter_frequency" +tf_td);
+
 			tf_weight = (tf_td)
-					/ (tf_td + (k_1 * ((1.0 - b)+(b * (s.getDocLength(
+					/ (tf_td + (k_1 * ((1.0 - b) + (b * (s.getDocLength(
 							result.invertedList.field,
 							result.invertedList.getDocid(i)) / avg_doclen)))));
-			
-			
+
 			score = (RSF) * (tf_weight) * (user_weight);
-			//System.out.println(score);
+			// System.out.println(score);
 			result.docScores.add(result.invertedList.postings.get(i).docid,
 					(float) score);
 
@@ -151,8 +197,8 @@ public class QryopSlScore extends QryopSl {
 		// Evaluate the query argument.
 
 		QryResult result = args.get(0).evaluate(r);
-		
-		if(result.docScores.scores.size()==result.invertedList.df){
+
+		if (result.docScores.scores.size() == result.invertedList.df) {
 			result.docScores.scores.clear();
 		}
 
@@ -164,10 +210,10 @@ public class QryopSlScore extends QryopSl {
 
 			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
 			// Unranked Boolean. All matching documents get a score of 1.0.
-//			if(!QryEval.getExternalDocid(result.invertedList.postings.get(i).docid).equals("clueweb09-en0009-25-22037")){
-//				  
-//				  continue;
-//			  }
+			// if(!QryEval.getExternalDocid(result.invertedList.postings.get(i).docid).equals("clueweb09-en0009-25-22037")){
+			//
+			// continue;
+			// }
 			if (r instanceof RetrievalModelRankedBoolean) {
 				result.docScores.add(result.invertedList.postings.get(i).docid,
 						(float) result.invertedList.postings.get(i).tf);
@@ -197,8 +243,8 @@ public class QryopSlScore extends QryopSl {
 		// Evaluate the query argument.
 
 		QryResult result = args.get(0).evaluate(r);
-		
-		if(result.docScores.scores.size()==result.invertedList.df){
+
+		if (result.docScores.scores.size() == result.invertedList.df) {
 			result.docScores.scores.clear();
 		}
 
@@ -241,8 +287,21 @@ public class QryopSlScore extends QryopSl {
 			throws IOException {
 		// TODO enquire whether the default score for ranked boolean score is
 		// also 0.0
-		if (r instanceof RetrievalModelUnrankedBoolean)
-			return (0.0);
+		if (r instanceof RetrievalModelIndri) {
+			RetrievalModelIndri model = (RetrievalModelIndri) r;
+			long N = QryEval.READER.getSumTotalTermFreq(this.field);
+			double pMleTerm = ((double)this.ctf)/(N);
+			double term1 = (1 - model.lambda) * pMleTerm;
+			double term2 = (model.lambda * model.mu * pMleTerm);
+			double term3 = (this.s.getDocLength(this.field,(int) docid) + model.mu);
+			
+			double score = term1 + (term2/term3);
+			
+//			double score = ((1 - model.lambda) * pMleTerm)
+//					+ ((model.lambda * model.mu * pMleTerm) / (this.s.getDocLength(this.field,(int) docid) + model.mu));
+//			
+			return score;
+		}
 
 		return 0.0;
 	}

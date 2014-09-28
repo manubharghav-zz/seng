@@ -117,13 +117,21 @@ public class QryopSlOr extends QryopSl {
    *  @param docid The internal id of the document that needs a default score.
    *  @return The default score.
    */
-  public double getDefaultScore (RetrievalModel r, long docid) throws IOException {
+	public double getDefaultScore(RetrievalModel r, long docid)
+			throws IOException {
+		
+		double score = 1.0;
+		if (r instanceof RetrievalModelIndri){
+			for (Qryop arg : args) {
+				if (arg instanceof QryopSl) {
+					QryopSl SlOp = (QryopSl) arg;
+					score = score*SlOp.getDefaultScore(r, docid);
+				}
+			}
+		}
+		return score;
 
-    if (r instanceof RetrievalModelUnrankedBoolean)
-      return (0.0);
-
-    return 0.0;
-  }
+	}
 
   /*
    *  Return a string version of this query operator.  

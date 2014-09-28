@@ -7,6 +7,8 @@
 import java.io.*;
 import java.util.*;
 
+
+
 public class QryopSlAnd extends QryopSl {
 
   /**
@@ -56,10 +58,96 @@ public class QryopSlAnd extends QryopSl {
    *  @throws IOException
    */
 
-  private QryResult evaluateIndri(RetrievalModel r) {
-	
-	return null;
-}
+  private QryResult evaluateIndri(RetrievalModel r) throws IOException {
+
+	  try {
+		  // Initialization
+
+		  allocDaaTPtrs(r);
+
+		  QryResult result = new QryResult();
+		  if (this.daatPtrs.size() == 0) {
+			  return result;
+		  }
+		  int crtDocId = Integer.MAX_VALUE;
+		  double score = 0.0;
+		  Set<Integer> currentIDListIndex = new HashSet<Integer>();// list of
+		  // all
+		  // those
+		  // docpts
+		  // which
+		  // contain
+		  // the
+		  // minimum
+		  // id.
+		  Set<Integer> completedListIndex = new HashSet<Integer>(); // list of
+		  // all
+		  // those
+		  // docptrs
+		  // which
+		  // have
+		  // been
+		  // exhausted(completely
+		  // parsed).
+
+		  EVALUATEDOCUMENTS: while (true) {
+			  // identify the minimum current id. and keep track of the all
+			  // those
+			  // docptr which have the minimum id in their lists. So that you
+			  // could just update all those lists in one go.
+			  for (int i = 0; i < this.daatPtrs.size(); i++) {
+
+				  DaaTPtr ptrj = this.daatPtrs.get(i);
+				  if (completedListIndex.contains(i)
+						  || ptrj.nextDoc >= ptrj.scoreList.scores.size()) {
+					  completedListIndex.add(i);
+					  if (completedListIndex.size() == this.daatPtrs.size()) {
+						  break EVALUATEDOCUMENTS;
+					  }
+					  continue;
+				  }
+				  if (ptrj.scoreList.getDocid(ptrj.nextDoc) < crtDocId) {
+
+					  crtDocId = ptrj.scoreList.getDocid(ptrj.nextDoc);
+					  currentIDListIndex.clear();
+					  currentIDListIndex.add(i);
+				  } else if (ptrj.scoreList.getDocid(ptrj.nextDoc) == crtDocId) {
+					  currentIDListIndex.add(i);
+				  }
+			  }
+			  score = 1.0;
+			  for (int i = 0; i < this.daatPtrs.size(); i++) {
+				  if (currentIDListIndex.contains(i)) {
+
+					  score = score
+							  * Math.pow(
+									  this.daatPtrs.get(i).scoreList
+									  .getDocidScore(this.daatPtrs
+											  .get(i).nextDoc),
+											  1.0 / args.size());
+					  this.daatPtrs.get(i).nextDoc++;
+
+				  } else {
+					  QryopSl opSL = (QryopSl) this.args.get(i);
+					  score = score
+							  * Math.pow(opSL.getDefaultScore(r, crtDocId),
+									  1.0 / args.size());
+				  }
+			  }
+
+			  result.docScores.add(crtDocId, score);
+			  currentIDListIndex.clear();
+			  crtDocId = Integer.MAX_VALUE;
+
+		  }
+		  freeDaaTPtrs();
+		  return result;
+	  } catch (Exception e) {
+		  System.out.println("Exception in Indir" + e);
+	  }
+	  return null;
+
+  }
 
 /**
    *  Evaluates the query operator for boolean retrieval models,
@@ -110,13 +198,6 @@ public class QryopSlAnd extends QryopSl {
 
       int ptr0Docid = ptr0.scoreList.getDocid (ptr0.nextDoc);
       double docScore = ptr0.scoreList.getDocidScore(ptr0.nextDoc);
-      
-//      if(QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
-//		  
-//		  System.out.println("found the document in uplift " + docScore);
-//	  }
-
-      //  Do the other query arguments have the ptr0Docid?
 
       for (int j=1; j<this.daatPtrs.size(); j++) {
 
@@ -133,10 +214,6 @@ public class QryopSlAnd extends QryopSl {
 	      ptrj.nextDoc ++;			// Not yet at the right doc.
 	  else {
 		  // this ensures that the and score computation happens independant of the choice of the retrieval model.
-//		  if(QryEval.getExternalDocid(ptr0Docid).equals("clueweb09-en0009-25-22037")){
-//			  
-//			  System.out.println("found the document in near " + ptrj.scoreList.getDocidScore(ptrj.nextDoc));
-//		  }
 		  docScore = Math.min(docScore, ptrj.scoreList.getDocidScore(ptrj.nextDoc));
 	      break;// ptrj matches ptr0Docid
 	  }
@@ -163,10 +240,19 @@ public class QryopSlAnd extends QryopSl {
    */
   public double getDefaultScore (RetrievalModel r, long docid) throws IOException {
 
-    if (r instanceof RetrievalModelUnrankedBoolean)
-      return (0.0);
+	  double score = 1.0;
+		if (r instanceof RetrievalModelIndri){
+			for (Qryop arg : args) {
+				if (arg instanceof QryopSl) {
+					QryopSl SlOp = (QryopSl) arg;
+					score = score*SlOp.getDefaultScore(r, docid);
+				}
+			}
+		}
+		
+		
 
-    return 0.0;
+		return Math.pow(score, 1.0/args.size());
   }
 
   /*
