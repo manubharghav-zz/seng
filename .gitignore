@@ -1,6 +1,7 @@
 src/nohup.out
 src/Sample.param
 resources/test.in
+bin1/
 bin/
 results/
 *./bin/*
