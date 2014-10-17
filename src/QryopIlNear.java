@@ -55,9 +55,6 @@ public class QryopIlNear extends QryopIl {
 		int index_l1 = 0;
 		int index_l2 = 0;
 		while (index_l2 < l2.size() && index_l1 < l1.size()) {
-			if (l2.get(index_l2) == 3101) {
-				System.out.println();
-			}
 			if (l2.get(index_l2) < l1.get(index_l1)) {
 				index_l2++;
 			} else if (l2.get(index_l2) - l1.get(index_l1) <= this.n) {

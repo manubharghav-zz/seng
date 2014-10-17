@@ -152,8 +152,9 @@ public class QryEval {
     // Later HW assignments will use more RAM, so you want to be aware
     // of how much memory your program uses.
     printMemoryUsage(true);
+    }
 
-  }
+
 
   /**
    *  Write an error message and exit.  This can be done in other
@@ -289,7 +290,21 @@ public class QryEval {
 						}
 					}
 					else{
-						break;
+						if (currentOp instanceof QryopIlNear
+								|| currentOp instanceof QryopIlSyn) {
+							Qryop arg = currentOp;
+							if (defaultOp.equals("or")) {
+								currentOp = new QryopSlOr();
+								currentOp.add(arg);
+							} else if (defaultOp.equals("sum")) {
+								currentOp = new QryopSlSum();
+								currentOp.add(arg);
+							} else if (defaultOp.equals("and")) {
+								currentOp = new QryopSlAnd();
+								currentOp.add(arg);
+							}
+							break;
+						}
 					}
 				}
 				else{
@@ -390,18 +405,8 @@ public class QryEval {
    * @throws IOException 
    */
 	static void printResultstoFile(String queryName, QryResult result, Writer writer) throws IOException {
-		/* Sample format.
-		 * for a normal result
-		 * "1 Q0 clueweb09-enwp01-75-20596 1 1.0 run-1";
-		 * 
-		 * For empyt result
-		 * 10 	Q0 	dummy 	1 	0	run-1
-		*/
-
-//		long time = System.currentTimeMillis();
 		ArrayList<QryResult.Item> list = result.sortResults();
-//		long time_for_sorting = System.currentTimeMillis() - time;
-//		System.out.println("took " + time_for_sorting +"   for sorting");
+
 		if (result.docScores.scores.size() < 1) {
 			writer.write((queryName + "\t"+"Q0" + "\t" + "dummy"+"\t"+"1"+"\t"+"0"+"\t"+"run-1"+"\n"));
 		} else {

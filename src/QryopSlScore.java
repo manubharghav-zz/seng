@@ -12,10 +12,14 @@ import java.io.*;
 import java.util.*;
 
 public class QryopSlScore extends QryopSl {
-
+	
+	
+	// storing the fields to id the computation of the default scores for documents in the indri retreival models.
 	private int ctf;
 	private String field;
 	private DocLengthStore s;
+	private long N;
+	private double pMle;
 
 	/**
 	 * Construct a new SCORE operator. The SCORE operator accepts just one
@@ -79,16 +83,21 @@ public class QryopSlScore extends QryopSl {
 		QryResult result = args.get(0).evaluate(model);
 		if(s==null){
 			this.s = new DocLengthStore(QryEval.READER);
+			
 		}
 		if (result.docScores.scores.size() == result.invertedList.df) {
 			result.docScores.scores.clear();
 		}
 		
+		
+		//store the relevant information in the score query operator class.
 		this.ctf = result.invertedList.ctf;
 		this.field = result.invertedList.field;
+		this.N = QryEval.READER.getSumTotalTermFreq(this.field);
+
 		
 		
-		long N = QryEval.READER.getSumTotalTermFreq(this.field);
+//		long N = QryEval.READER.getSumTotalTermFreq(this.field);
 		double pMleTerm = ((double)this.ctf)/(N);
 		
 		for (int i = 0; i < result.invertedList.df; i++) {
@@ -289,16 +298,16 @@ public class QryopSlScore extends QryopSl {
 		// also 0.0
 		if (r instanceof RetrievalModelIndri) {
 			RetrievalModelIndri model = (RetrievalModelIndri) r;
-			long N = QryEval.READER.getSumTotalTermFreq(this.field);
+//			long N = QryEval.READER.getSumTotalTermFreq(this.field);
 			double pMleTerm = ((double)this.ctf)/(N);
-			double term1 = (1 - model.lambda) * pMleTerm;
-			double term2 = (model.lambda * model.mu * pMleTerm);
-			double term3 = (this.s.getDocLength(this.field,(int) docid) + model.mu);
+//			double term1 = (1 - model.lambda) * pMleTerm;
+//			double term2 = (model.lambda * model.mu * pMleTerm);
+//			double term3 = (this.s.getDocLength(this.field,(int) docid) + model.mu);
+//			
+//			double score = term1 + (term2/term3);
 			
-			double score = term1 + (term2/term3);
-			
-//			double score = ((1 - model.lambda) * pMleTerm)
-//					+ ((model.lambda * model.mu * pMleTerm) / (this.s.getDocLength(this.field,(int) docid) + model.mu));
+			double score = ((1 - model.lambda) * pMleTerm)
+					+ ((model.lambda * model.mu * pMleTerm) / (this.s.getDocLength(this.field,(int) docid) + model.mu));
 //			
 			return score;
 		}
