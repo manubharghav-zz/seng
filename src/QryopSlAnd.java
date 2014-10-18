@@ -9,6 +9,8 @@ import java.util.*;
 
 
 
+
+
 public class QryopSlAnd extends QryopSl {
 
   /**
@@ -57,7 +59,18 @@ public class QryopSlAnd extends QryopSl {
    *  @return The result of evaluating the query.
    *  @throws IOException
    */
+  public int getSmallestCurrentDocid() {
 
+	  int nextDocid = Integer.MAX_VALUE;
+
+	  for (int i = 0; i < this.daatPtrs.size(); i++) {
+		  DaaTPtr ptri = this.daatPtrs.get(i);
+		  if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
+			  nextDocid = ptri.invList.getDocid(ptri.nextDoc);
+	  }
+
+	  return (nextDocid);
+  }
   private QryResult evaluateIndri(RetrievalModel r) throws IOException {
 
 	  try {
@@ -89,7 +102,7 @@ public class QryopSlAnd extends QryopSl {
 		  // been
 		  // exhausted(completely
 		  // parsed).
-
+		  
 		  EVALUATEDOCUMENTS: while (true) {
 			  // identify the minimum current id. and keep track of the all
 			  // those
@@ -114,6 +127,10 @@ public class QryopSlAnd extends QryopSl {
 				  } else if (ptrj.scoreList.getDocid(ptrj.nextDoc) == crtDocId) {
 					  currentIDListIndex.add(i);
 				  }
+			  }
+//			  int minDocid = getSmallestCurrentDocid();
+			  if(QryEval.getExternalDocid(crtDocId).equals("clueweb09-enwp03-57-00556")){
+				  System.out.println("manu");
 			  }
 			  score = 1.0;
 			  for (int i = 0; i < this.daatPtrs.size(); i++) {

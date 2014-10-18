@@ -159,6 +159,7 @@ public class QryopSlScore extends QryopSl {
 		// Each pass of the loop computes a score for one document. Note:
 		// If the evaluate operation above returned a score list (which is
 		// very possible), this loop gets skipped.
+		System.out.println(result.invertedList.df);
 		RSF = Math.log((0.5 + N - result.invertedList.df)
 				/ ((result.invertedList.df) + 0.5));
 		user_weight = ((k_3 + 1.0) * tf_q) / (k_3 + tf_q);
@@ -167,7 +168,9 @@ public class QryopSlScore extends QryopSl {
 
 			// DIFFERENT RETRIEVAL MODELS IMPLEMENT THIS DIFFERENTLY.
 			// Unranked Boolean. All matching documents get a score of 1.0.
-
+			if(QryEval.getExternalDocid(result.invertedList.getDocid(i)).equals("clueweb09-en0001-18-32681")){
+				System.out.println("manu");
+			}
 			tf_td = (double) result.invertedList.getTf(i);
 			// System.out.println("ter_frequency" +tf_td);
 

@@ -6,5 +6,5 @@
 52:#OR(avp.url)
 71:#OR(#NEAR/4(living.title india.title) #AND(living india))
 102:#NEAR/3(fickle creek farm)
-149:#AND(uplift yellowstone national park #NEAR/3(yellowstone park))
+149:uplift at #NEAR/3(yellowstone national park)
 190:#AND(#NEAR/2(brooks.title brothers.title) clearance)

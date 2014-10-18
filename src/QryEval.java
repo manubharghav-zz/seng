@@ -175,7 +175,7 @@ public class QryEval {
    * @param iid The internal document id of the document.
    * @throws IOException 
    */
-  static String getExternalDocid (int iid) throws IOException {
+	static String getExternalDocid (int iid) throws IOException {
     Document d = QryEval.READER.document (iid);
     String eid = d.get ("externalId");
     return eid;
@@ -204,6 +204,21 @@ public class QryEval {
       return hits[0].doc;
     }
   }
+  
+  
+public static Qryop getDefaultQueryOperator(String defaultOp){
+	Qryop currentOp = null;
+	if(defaultOp.equals("or")){
+		currentOp = new QryopSlOr();
+	}
+	else if(defaultOp.equals("sum")){
+		currentOp = new QryopSlSum();
+	}
+	else if(defaultOp.equals("and")){
+		currentOp = new QryopSlAnd();
+	}
+	return currentOp;
+}
 
   /**
    * parseQuery converts a query string into a query tree.
@@ -216,7 +231,9 @@ public class QryEval {
    * @throws IOException
    */
   static Qryop parseQuery(String defaultOp, String qString) throws IOException {
+	  
 
+	
     Qryop currentOp = null;
     Stack<Qryop> stack = new Stack<Qryop>();
 
@@ -248,6 +265,16 @@ public class QryEval {
 			} else if (token.equalsIgnoreCase("#and")) {
 				currentOp = new QryopSlAnd();
 				stack.push(currentOp);
+			} else if (token.equalsIgnoreCase("#wand")) {
+				currentOp = new QryopSlWand();
+				stack.push(currentOp);
+				currentOp.hasWeights = true;
+				currentOp.readweight=false;
+			} else if (token.equalsIgnoreCase("#wsum")) {
+				currentOp = new QryopSlWsum();
+				stack.push(currentOp);
+				currentOp.hasWeights = true;
+				currentOp.readweight=false;
 			} else if (token.equalsIgnoreCase("#or")) {
 				currentOp = new QryopSlOr();
 				stack.push(currentOp);
@@ -259,7 +286,13 @@ public class QryEval {
 
 				currentOp = new QryopIlNear(Integer.parseInt(splits[1]));
 				stack.push(currentOp);
-			} else if (token.equalsIgnoreCase("#syn")) {
+			} else if (token.toLowerCase().contains("#window")) {
+				String[] splits = token.split("/");
+
+				currentOp = new QryopIlWindow(Integer.parseInt(splits[1]));
+				stack.push(currentOp);
+			}
+			else if (token.equalsIgnoreCase("#syn")) {
 				currentOp = new QryopIlSyn();
 				stack.push(currentOp);
 			} else if (token.startsWith(")")) { // Finish current query
@@ -270,54 +303,46 @@ public class QryEval {
 				// below). Otherwise, add the current operator as an
 				// argument to the higher-level operator, and shift
 				// processing back to the higher-level operator.
-
+				
 				stack.pop();
 
 				if (stack.empty()){
 					if(tokens.hasMoreTokens()){
 						Qryop arg = currentOp;
-						if(defaultOp.equals("or")){
-							currentOp = new QryopSlOr();
-							currentOp.add(arg);
-						}
-						else if(defaultOp.equals("sum")){
-							currentOp = new QryopSlSum();
-							currentOp.add(arg);
-						}
-						else if(defaultOp.equals("and")){
-							currentOp = new QryopSlAnd();
-							currentOp.add(arg);
-						}
+						currentOp = getDefaultQueryOperator(defaultOp);
+						currentOp.add(arg);
 					}
 					else{
 						if (currentOp instanceof QryopIlNear
 								|| currentOp instanceof QryopIlSyn) {
 							Qryop arg = currentOp;
-							if (defaultOp.equals("or")) {
-								currentOp = new QryopSlOr();
-								currentOp.add(arg);
-							} else if (defaultOp.equals("sum")) {
-								currentOp = new QryopSlSum();
-								currentOp.add(arg);
-							} else if (defaultOp.equals("and")) {
-								currentOp = new QryopSlAnd();
-								currentOp.add(arg);
-							}
+							currentOp = getDefaultQueryOperator(defaultOp);
+							currentOp.add(arg);
 							break;
 						}
 					}
 				}
-				else{
+				else {
 
-				Qryop arg = currentOp;
-				currentOp = stack.peek();
-				currentOp.add(arg);
+					Qryop arg = currentOp;
+					currentOp = stack.peek();
+					currentOp.add(arg);
+					if(currentOp.hasWeights){
+						currentOp.readweight = false;
+					}
 				}
 			} else {
 
 				// NOTE: You should do lexical processing of the token before
 				// creating the query term, and you should check to see whether
 				// the token specifies a particular field (e.g., apple.title).
+				if (currentOp.hasWeights && !currentOp.readweight) {
+					float weight = Float.parseFloat(token);
+					currentOp.addWeights(weight);
+					currentOp.readweight=true;
+					continue;
+				}
+				
 				StringTokenizer fields = new StringTokenizer(token, ".", false);
 				String word = fields.nextToken();
 				String[] tokenizedWord = tokenizeQuery(word);
@@ -329,7 +354,17 @@ public class QryEval {
 					} else {
 						currentOp.add(new QryopIlTerm((tokenizedWord[0])));
 					}
+					
 				}
+				else{
+					if(currentOp.hasWeights){
+						currentOp.weights.remove(currentOp.weights.size()-1);
+					}
+				}
+				if(currentOp.hasWeights){
+					currentOp.readweight=false;
+				}
+				
 
 			}
 		}
@@ -339,6 +374,12 @@ public class QryEval {
 
     if (tokens.hasMoreTokens()) {
     	System.err.println("Error while parsing query. Please loook");
+    }
+    
+    if(currentOp instanceof QryopIlWindow || currentOp instanceof QryopIlSyn || currentOp instanceof QryopIlNear){
+    	Qryop arg = currentOp;
+    	currentOp = getDefaultQueryOperator(defaultOp);
+		currentOp.add(arg);
     }
 
     return currentOp;
@@ -410,7 +451,7 @@ public class QryEval {
 		if (result.docScores.scores.size() < 1) {
 			writer.write((queryName + "\t"+"Q0" + "\t" + "dummy"+"\t"+"1"+"\t"+"0"+"\t"+"run-1"+"\n"));
 		} else {
-			for (int i = 0; i < Math.min(100,result.docScores.scores.size()); i++) {
+			for (int i = 0; i < Math.min(100, result.docScores.scores.size()); i++) {
 				writer.write(queryName  +"\t"+"Q0"+"\t"
 						+ list.get(i).getDocid() +"\t"+String.valueOf(i+1)+"\t"
 						+ list.get(i).getScore() +"\t"+"run-1"+"\n");

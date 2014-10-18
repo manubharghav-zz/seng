@@ -25,9 +25,17 @@ public abstract class Qryop {
 
   //  Initially the query operator starts with no arguments and no
   //  DaaTPtrs.
-
+	Vector<Float> weights = new Vector<Float>();
+	
+	
+	
+	public void addWeights(float weight){
+		weights.add(weight);
+	}
   protected ArrayList<Qryop> args = new ArrayList<Qryop>();
   protected List<DaaTPtr> daatPtrs = new ArrayList<DaaTPtr>();
+  protected boolean readweight = true;
+  protected boolean hasWeights = false;
   
   /**
    *  Appends an argument to the list of query operator arguments.  This
