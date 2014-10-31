@@ -104,8 +104,31 @@ public class QryEval {
     	defaultOp = "and";
     	System.out.println("indri");
     	model = new RetrievalModelIndri();
+    	RetrievalModelIndri indriModel = (RetrievalModelIndri) model;
     	model.setParameter("mu", params.get("Indri:mu"));
     	model.setParameter("lambda", params.get("Indri:lambda"));
+    	//start reading fb paramenters.
+    	if(params.containsKey("fb")){
+    		indriModel.setFb(Boolean.parseBoolean(params.get("fb")));    		
+    	}
+    	if(params.containsKey("fbDocs")){
+    		indriModel.setFbDocs(Integer.parseInt(params.get("fbDocs")));
+    	}
+    	if(params.containsKey("fbTerms")){
+    		indriModel.setFbTerms(Integer.parseInt(params.get("fbTerms")));
+    	}
+    	if(params.containsKey("fbMu")){
+    		indriModel.setFbMu(Double.parseDouble(params.get("fbDocs")));
+    	}
+    	if(params.containsKey("fbOrigWeight")){
+    		indriModel.setFbOrigWeight(Double.parseDouble(params.get("fbOrigWeight")));
+    	}
+    	if(params.containsKey("fbInitialRankingFile")){
+    		indriModel.setFbInitialRankingFile(params.get("fbInitialRankingFile"));
+    	}
+    	if(params.containsKey("fbExpansionQueryFile")){
+    		indriModel.setFbExpansionQueryFile(params.get("fbExpansionQueryFile"));
+    	}
     }
     
     String QueryFilePath = params.get("queryFilePath");
@@ -121,24 +144,32 @@ public class QryEval {
     BufferedReader input = new BufferedReader(new FileReader(QueryFilePath));
     String line2="";
     long time = System.currentTimeMillis();
-    while((line2=input.readLine())!=null){
-    	
-    	String[] splits = line2.split(":");
-    	String query_num = splits[0];
-    	String query= splits[1];
-    	System.out.println("Processing query: " + query_num );
-    	try{
-    		Qryop qTree;
-    		qTree = parseQuery (defaultOp,query);
-    	    printResultstoFile(query_num, qTree.evaluate (model),writer);
-    		
-    	}
-    	catch(Exception e){
-    		System.out.println(e +" occured while processing "  +  line2);
-    	}
-    	
-    }
-    System.out.println((System.currentTimeMillis() - time));
+	while ((line2 = input.readLine()) != null) {
+
+		String[] splits = line2.split(":");
+		String query_num = splits[0];
+		String query = splits[1];
+		System.out.println("Processing query: " + query_num);
+		try {
+			Qryop qTree;
+			qTree = parseQuery(defaultOp, query);
+			if (model instanceof RetrievalModelIndri
+					&& params.containsKey("fb")
+					&& params.get("fb").equals("true")) {
+				IndriQueryExpansion expander = new IndriQueryExpansion();
+				expander.setModel(model);
+				printResultstoFile(query_num, expander.evaluateQuery(qTree), writer);
+			}
+			else{
+				printResultstoFile(query_num, qTree.evaluate(model), writer);
+			}
+
+		} catch (Exception e) {
+			System.out.println(e + " occured while processing " + line2);
+		}
+
+	}
+    System.out.println("Time taken: " + (System.currentTimeMillis() - time));
     try{
     	input.close();
     	writer.close();
@@ -257,9 +288,10 @@ public static Qryop getDefaultQueryOperator(String defaultOp){
     // stack is also stored in currentOp.
 
 		while (tokens.hasMoreTokens()) {
+			
 
 			token = tokens.nextToken();
-
+//			System.out.println(token);
 			if (token.matches("[/ ,(\t\n\r]")) {
 				// Ignore most delimiters.
 			} else if (token.equalsIgnoreCase("#and")) {
@@ -303,7 +335,7 @@ public static Qryop getDefaultQueryOperator(String defaultOp){
 				// below). Otherwise, add the current operator as an
 				// argument to the higher-level operator, and shift
 				// processing back to the higher-level operator.
-				
+//				System.out.println(stack.size());
 				stack.pop();
 
 				if (stack.empty()){
@@ -326,7 +358,15 @@ public static Qryop getDefaultQueryOperator(String defaultOp){
 
 					Qryop arg = currentOp;
 					currentOp = stack.peek();
-					currentOp.add(arg);
+					if(arg.args.size()>0){
+						currentOp.add(arg);
+					}
+					else{
+						if(currentOp.hasWeights){
+							currentOp.weights.remove(currentOp.weights.size()-1);
+						}
+					}
+					
 					if(currentOp.hasWeights){
 						currentOp.readweight = false;
 					}

@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
@@ -12,6 +13,7 @@ public class QryopSlWand extends QryopSl {
 	
 	
 	public void computeTotalWeights(){
+		totalWeights=0;
 		for(float f:this.weights){
 			totalWeights+=f;
 		}
@@ -22,15 +24,21 @@ public class QryopSlWand extends QryopSl {
 		
 		if(r instanceof RetrievalModelIndri){
 			double score = 1.0;
+			if(args.size()==0){
+				  return 1.0;
+			  }
 			if (r instanceof RetrievalModelIndri){
-				for (Qryop arg : args) {
+				for(int i=0;i<args.size();i++){
+//				for (Qryop arg : args) {
+					Qryop arg = args.get(i);
 					if (arg instanceof QryopSl) {
 						QryopSl SlOp = (QryopSl) arg;
-						score = score*SlOp.getDefaultScore(r, docid);
+						score = score*Math.pow(SlOp.getDefaultScore(r, docid),(weights.get(i)/totalWeights));
 					}
 				}
 			}
-			return Math.pow(score, 1.0/args.size());
+			return score;
+//			return Math.pow(score, 1.0/args.size());
 		}
 		return 0;
 	}
@@ -49,6 +57,18 @@ public class QryopSlWand extends QryopSl {
 	@Override
 	public QryResult evaluate(RetrievalModel r) throws IOException {
 		computeTotalWeights();
+		Iterator<Float> i1 = weights.iterator();
+		Iterator<Qryop> i2 = this.args.iterator();
+		
+		while(i1.hasNext()){
+			float weightAtI = i1.next();
+			Qryop argATI = i2.next();
+			if(weightAtI<0.0001){
+				i1.remove();
+				i2.remove();
+				System.out.println("removing from wand");
+			}
+		}
 		if(!(r instanceof RetrievalModelIndri)){
 			return null;
 		}
@@ -104,8 +124,10 @@ public class QryopSlWand extends QryopSl {
 										  .getDocidScore(this.daatPtrs
 												  .get(i).nextDoc),(weights.get(i)/this.totalWeights));
 						  this.daatPtrs.get(i).nextDoc++;
+//						  System.out.println(weights.get(i)/this.totalWeights);
 
 					  } else {
+//						  System.out.println("fucked");
 						  QryopSl opSL = (QryopSl) this.args.get(i);
 						  score = score
 								  * Math.pow(opSL.getDefaultScore(r, crtDocId),(weights.get(i)/this.totalWeights));

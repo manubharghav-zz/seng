@@ -59,18 +59,18 @@ public class QryopSlAnd extends QryopSl {
    *  @return The result of evaluating the query.
    *  @throws IOException
    */
-  public int getSmallestCurrentDocid() {
-
-	  int nextDocid = Integer.MAX_VALUE;
-
-	  for (int i = 0; i < this.daatPtrs.size(); i++) {
-		  DaaTPtr ptri = this.daatPtrs.get(i);
-		  if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
-			  nextDocid = ptri.invList.getDocid(ptri.nextDoc);
-	  }
-
-	  return (nextDocid);
-  }
+//  public int getSmallestCurrentDocid() {
+//
+//	  int nextDocid = Integer.MAX_VALUE;
+//
+//	  for (int i = 0; i < this.daatPtrs.size(); i++) {
+//		  DaaTPtr ptri = this.daatPtrs.get(i);
+//		  if (nextDocid > ptri.invList.getDocid(ptri.nextDoc))
+//			  nextDocid = ptri.invList.getDocid(ptri.nextDoc);
+//	  }
+//
+//	  return (nextDocid);
+//  }
   private QryResult evaluateIndri(RetrievalModel r) throws IOException {
 
 	  try {
@@ -127,10 +127,6 @@ public class QryopSlAnd extends QryopSl {
 				  } else if (ptrj.scoreList.getDocid(ptrj.nextDoc) == crtDocId) {
 					  currentIDListIndex.add(i);
 				  }
-			  }
-//			  int minDocid = getSmallestCurrentDocid();
-			  if(QryEval.getExternalDocid(crtDocId).equals("clueweb09-enwp03-57-00556")){
-				  System.out.println("manu");
 			  }
 			  score = 1.0;
 			  for (int i = 0; i < this.daatPtrs.size(); i++) {
@@ -258,6 +254,9 @@ public class QryopSlAnd extends QryopSl {
   public double getDefaultScore (RetrievalModel r, long docid) throws IOException {
 
 	  double score = 1.0;
+	  if(args.size()==0){
+		  return 1.0;
+	  }
 		if (r instanceof RetrievalModelIndri){
 			for (Qryop arg : args) {
 				if (arg instanceof QryopSl) {
@@ -265,6 +264,7 @@ public class QryopSlAnd extends QryopSl {
 					score = score*SlOp.getDefaultScore(r, docid);
 				}
 			}
+			
 		}
 		
 		

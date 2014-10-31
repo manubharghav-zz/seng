@@ -7,6 +7,13 @@ public class RetrievalModelIndri  extends RetrievalModel{
 
 	int mu;
 	double lambda;
+	boolean fb;
+	int fbDocs;
+	int fbTerms;
+	double fbMu;
+	double fbOrigWeight;
+	String fbInitialRankingFile;
+	String fbExpansionQueryFile;
 
 	/**
 	 * Set a retrieval model parameter.
@@ -22,6 +29,78 @@ public class RetrievalModelIndri  extends RetrievalModel{
 			this.lambda = value;
 		}
 		return true;
+	}
+
+	public int getMu() {
+		return mu;
+	}
+
+	public void setMu(int mu) {
+		this.mu = mu;
+	}
+
+	public double getLambda() {
+		return lambda;
+	}
+
+	public void setLambda(double lambda) {
+		this.lambda = lambda;
+	}
+
+	public boolean isFb() {
+		return fb;
+	}
+
+	public void setFb(boolean fb) {
+		this.fb = fb;
+	}
+
+	public int getFbDocs() {
+		return fbDocs;
+	}
+
+	public void setFbDocs(int fbDocs) {
+		this.fbDocs = fbDocs;
+	}
+
+	public int getFbTerms() {
+		return fbTerms;
+	}
+
+	public void setFbTerms(int fbTerms) {
+		this.fbTerms = fbTerms;
+	}
+
+	public double getFbMu() {
+		return fbMu;
+	}
+
+	public void setFbMu(double fbMu) {
+		this.fbMu = fbMu;
+	}
+
+	public double getFbOrigWeight() {
+		return fbOrigWeight;
+	}
+
+	public void setFbOrigWeight(double fbOrigWeight) {
+		this.fbOrigWeight = fbOrigWeight;
+	}
+
+	public String getFbInitialRankingFile() {
+		return fbInitialRankingFile;
+	}
+
+	public void setFbInitialRankingFile(String fbInitialRankingFile) {
+		this.fbInitialRankingFile = fbInitialRankingFile;
+	}
+
+	public String getFbExpansionQueryFile() {
+		return fbExpansionQueryFile;
+	}
+
+	public void setFbExpansionQueryFile(String fbExpansionQueryFile) {
+		this.fbExpansionQueryFile = fbExpansionQueryFile;
 	}
 
 	/**

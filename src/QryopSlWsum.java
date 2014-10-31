@@ -12,6 +12,7 @@ public class QryopSlWsum extends QryopSl {
 	
 	
 	public void computeTotalWeights(){
+		totalWeights=0;
 		for(float f:this.weights){
 			totalWeights+=f;
 		}
@@ -22,15 +23,21 @@ public class QryopSlWsum extends QryopSl {
 		
 		if(r instanceof RetrievalModelIndri){
 			double score = 1.0;
+			if(args.size()==0){
+				  return 1.0;
+			  }
 			if (r instanceof RetrievalModelIndri){
-				for (Qryop arg : args) {
+				for(int i=0;i<args.size();i++){
+//				for (Qryop arg : args) {
+					Qryop arg = args.get(i);
 					if (arg instanceof QryopSl) {
 						QryopSl SlOp = (QryopSl) arg;
-						score = score*SlOp.getDefaultScore(r, docid);
+						score = score* (weights.get(i)/totalWeights)* SlOp.getDefaultScore(r, docid);
 					}
 				}
 			}
-			return Math.pow(score, 1.0/args.size());
+			return score;
+//			return Math.pow(score, 1.0/args.size());
 		}
 		return 0;
 	}
