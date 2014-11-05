@@ -32,6 +32,11 @@ public abstract class Qryop {
 	public void addWeights(float weight){
 		weights.add(weight);
 	}
+	public void addWeights(double weight){
+		weights.add((float)weight);
+	}
+	
+	
   protected ArrayList<Qryop> args = new ArrayList<Qryop>();
   protected List<DaaTPtr> daatPtrs = new ArrayList<DaaTPtr>();
   protected boolean readweight = true;

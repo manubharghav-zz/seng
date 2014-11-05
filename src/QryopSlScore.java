@@ -83,7 +83,6 @@ public class QryopSlScore extends QryopSl {
 		QryResult result = args.get(0).evaluate(model);
 		if(s==null){
 			this.s = new DocLengthStore(QryEval.READER);
-			
 		}
 		if (result.docScores.scores.size() == result.invertedList.df) {
 			result.docScores.scores.clear();

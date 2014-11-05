@@ -66,7 +66,9 @@ public class QryResult {
 	 * ties). Smaller ids should be ranked higher (i.e. ascending order).
 	 */
 	public ArrayList<Item> sortResults() {
-
+		long time = System.currentTimeMillis();
+		
+//		System.out.println("results size " + docScores.scores.size());
 		ArrayList<Item> scoreEntries = new ArrayList<Item>();
 		for (ScoreList.ScoreListEntry entry : docScores.scores) {
 			try{
@@ -79,6 +81,8 @@ public class QryResult {
 			}
 		}
 		Collections.sort(scoreEntries);
+		
+		System.out.println("results_sorting " + (System.currentTimeMillis() - time) );
 		return scoreEntries;
 	}
 

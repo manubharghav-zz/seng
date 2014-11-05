@@ -58,6 +58,7 @@ public class QryEval {
       System.exit(1);
     }
     BufferedWriter writer;
+    BufferedWriter ExpandedQueryWriter=null;
     // read in the parameter file; one parameter per line in format of key=value
     Map<String, String> params = new HashMap<String, String>();
     Scanner scan = new Scanner(new File(args[0]));
@@ -118,7 +119,7 @@ public class QryEval {
     		indriModel.setFbTerms(Integer.parseInt(params.get("fbTerms")));
     	}
     	if(params.containsKey("fbMu")){
-    		indriModel.setFbMu(Double.parseDouble(params.get("fbDocs")));
+    		indriModel.setFbMu(Double.parseDouble(params.get("fbMu")));
     	}
     	if(params.containsKey("fbOrigWeight")){
     		indriModel.setFbOrigWeight(Double.parseDouble(params.get("fbOrigWeight")));
@@ -128,6 +129,7 @@ public class QryEval {
     	}
     	if(params.containsKey("fbExpansionQueryFile")){
     		indriModel.setFbExpansionQueryFile(params.get("fbExpansionQueryFile"));
+    		ExpandedQueryWriter = new BufferedWriter(new FileWriter(new File(params.get("fbExpansionQueryFile"))));
     	}
     }
     
@@ -153,17 +155,18 @@ public class QryEval {
 		try {
 			Qryop qTree;
 			qTree = parseQuery(defaultOp, query);
+			long time2 = System.currentTimeMillis();
 			if (model instanceof RetrievalModelIndri
 					&& params.containsKey("fb")
 					&& params.get("fb").equals("true")) {
 				IndriQueryExpansion expander = new IndriQueryExpansion();
 				expander.setModel(model);
-				printResultstoFile(query_num, expander.evaluateQuery(qTree), writer);
+				printResultstoFile(query_num, expander.evaluateQuery(qTree, Integer.parseInt(query_num), ExpandedQueryWriter), writer);
 			}
 			else{
 				printResultstoFile(query_num, qTree.evaluate(model), writer);
 			}
-
+			System.out.println("outer state " + (System.currentTimeMillis() - time2));
 		} catch (Exception e) {
 			System.out.println(e + " occured while processing " + line2);
 		}
@@ -173,6 +176,9 @@ public class QryEval {
     try{
     	input.close();
     	writer.close();
+    	if(ExpandedQueryWriter!=null){
+    		ExpandedQueryWriter.close();
+    	}
     }
  catch (Exception e) {
 			// hmm weird case. cant do anything now. If null pointer occurs the

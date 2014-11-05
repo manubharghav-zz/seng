@@ -148,15 +148,28 @@ public class QryopSlWand extends QryopSl {
 
 	  
 	}
-
+	
 	@Override
 	public String toString() {
 
 		String result = new String();
 
 		for (int i = 0; i < this.args.size(); i++)
-			result += this.args.get(i).toString() + " ";
+			result += this.weights.get(i) + " " +this.args.get(i).toString() + " ";
 
+		return ("#WAND( " + result + ")");
+
+	}
+	
+
+	public String getQuery() {
+
+		String result = new String();
+
+		for (int i = 0; i < this.args.size(); i++){
+			String tmp = this.args.get(i).toString();
+			result += this.weights.get(i) + " " +(tmp.split("\\.")[0]) + " ";
+		}
 		return ("#WAND( " + result + ")");
 
 	}

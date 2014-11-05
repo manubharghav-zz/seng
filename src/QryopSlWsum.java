@@ -22,7 +22,7 @@ public class QryopSlWsum extends QryopSl {
 			throws IOException {
 		
 		if(r instanceof RetrievalModelIndri){
-			double score = 1.0;
+			double score = 0.0;
 			if(args.size()==0){
 				  return 1.0;
 			  }
@@ -32,7 +32,7 @@ public class QryopSlWsum extends QryopSl {
 					Qryop arg = args.get(i);
 					if (arg instanceof QryopSl) {
 						QryopSl SlOp = (QryopSl) arg;
-						score = score* (weights.get(i)/totalWeights)* SlOp.getDefaultScore(r, docid);
+						score = score + (weights.get(i)/totalWeights)* SlOp.getDefaultScore(r, docid);
 					}
 				}
 			}

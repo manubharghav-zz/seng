@@ -65,4 +65,8 @@ public class QryopIlTerm extends QryopIl {
   public String toString(){
     return (this.term + "." + this.field);
   }
+  
+  public String getTerm(){
+	    return (this.term);
+	  }
 }
